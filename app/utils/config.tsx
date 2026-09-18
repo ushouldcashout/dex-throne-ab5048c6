@@ -348,6 +348,28 @@ export const useOrderlyConfig = () => {
       })
       .filter((menu) => menu.activeIcon && menu.inactiveIcon);
 
+    // THRONE: points tab in the mobile bottom nav
+    const crown = (fill: string, stroke: string) => (
+      <svg width="24" height="24" viewBox="-28 -34 56 56" fill="none">
+        <path
+          d="M-24,10 L-24,-14 L-13,-6 L0,-26 L13,-6 L24,-14 L24,10 Z"
+          fill={fill}
+          stroke={stroke}
+          strokeWidth="3"
+          strokeLinejoin="round"
+        />
+        <rect x="-24" y="10" width="48" height="9" rx="4.5" fill={fill} stroke={stroke} strokeWidth="2.6" />
+        <circle cx="0" cy="-29" r="3.6" fill="#D4AF37" />
+      </svg>
+    );
+    bottomNavMenus.push({
+      name: "Points",
+      href: "https://throne.network/points",
+      target: "_self",
+      activeIcon: crown("#229959", "#39F194"),
+      inactiveIcon: crown("#1a3a28", "#5E6663"),
+    });
+
     const mainNavProps: MainNavWidgetProps = {
       initialMenu: "/",
       mainMenus: allMainMenus,
