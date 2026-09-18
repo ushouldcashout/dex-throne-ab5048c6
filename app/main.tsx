@@ -38,7 +38,8 @@ const PointsIndex = lazy(() => import("./pages/points/Index"));
 async function loadRuntimeConfig() {
   return new Promise<void>((resolve) => {
     const script = document.createElement("script");
-    script.src = withBasePath("/config.js");
+    // THRONE: cache-bust runtime config so edits propagate without waiting on browser cache TTL
+    script.src = withBasePath("/config.js") + "?v=" + Math.floor(Date.now() / 60000);
     script.onload = () => {
       console.log("Runtime config loaded successfully");
       resolve();
