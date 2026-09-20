@@ -24,6 +24,7 @@ import {
 } from "@orderly.network/ui-scaffold";
 import { CampaignsNavTitle } from "@/components/CampaignsNavTitle";
 import CustomLeftNav from "@/components/CustomLeftNav";
+import { ThroneSounds } from "@/components/ThroneSounds";
 import { OrderlyActiveIcon, OrderlyIcon } from "../components/icons/orderly";
 import { withBasePath } from "./base-path";
 import {
@@ -425,6 +426,8 @@ export const useOrderlyConfig = () => {
             {components.languageSwitcher}
             {components.subAccount}
             {components.walletConnect}
+            {/* THRONE: fill / close / risk sounds + mute pill (fixed position) */}
+            {!isMobile && <ThroneSounds />}
           </Flex>
         </Flex>
       );
