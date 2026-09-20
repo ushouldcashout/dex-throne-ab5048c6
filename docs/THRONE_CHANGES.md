@@ -17,6 +17,38 @@ Conventions
 
 ## Log
 
+### 2026-09-20 · Referrals v2.1: commission-only model (no trader discount)
+
+- Corrected the program model after reading Orderly's builder/affiliate guides and the account's
+  own `/v1/referral/multi_level/*` responses: in the **multilevel** program the referrer earns the
+  whole commission and **the referred trader gets no fee discount** ("the trader does not earn
+  affiliate commission from their own trade"). Orderly One "Base referral commission 40%" =
+  `base_rebate_rate` 0.4; bonus (`max_rebate_rate`) is 0 unless the desk grants a KOL more.
+  An affiliate's rate = base + bonus, applied to THRONE net (2.0 bps) → 0.8 bps of referred taker
+  volume ≈ $8 per $100k. The earlier "you earn 0% · traders get 100%" preview came from treating
+  base as a referee share.
+- `useReferralData.ts`: `commissionRate = (bonus ?? max) + base`, falls back to 0.4; legacy
+  program keeps referrer/referee split. Exposes `debug` (raw maxRate / rebateInfo / prereq / info).
+- `ReferralsPage.tsx`: no split slider, no discount copy anywhere. Subtitle and Create Code modal
+  say "you earn 40% of the desk's fee revenue on every trade your referrals make, paid daily"
+  with the per-$100k figure. `claim_code` is called with `referee_rebate_rate: 0` (the pass-down
+  rate for sub-affiliates; same default as Orderly's own dialog). Enter Code modal: one sentence.
+  Locked state copy matches the standard page: "Create a referral code after trading $X".
+  `?debug=1` on /referrals prints the raw program responses (for Finn / support).
+- Operator: to gate code creation behind volume, set Orderly One → Affiliates → Minimum trading
+  volume (target: 6,969.69 USDC). The page reads it from `volume_prerequisite`.
+
+### 2026-09-20 · PnL share posters: green crowns, degen taglines
+
+- `public/pnl/poster_bg_1..8.webp` replaced (1200×675). Dark base, faint grid, soft green glow,
+  the desk's crown silhouette in king green with the gold ball, mono lowercase taglines bottom-right.
+  Left ~55% is kept quiet because Orderly draws the PnL text there (message / position / PnL /
+  info top-left, ref link bottom-left). Art is original: crown, crown rain, climbing candles,
+  pixel king-cat, money printer with crowned bills, pawn → crown, grass + crown, pixel throne.
+  No third-party characters.
+  Source: `tmp_posters.py` in the session (PIL); ask if you want it in the repo.
+- `public/config.js` unchanged (count stays 8). The old red `poster_bg_1..4.png` are unused (the app loads `.webp`) and can be deleted whenever.
+
 ### 2026-09-20 · Referrals v2: self-serve codes, Create Code first
 
 - THRONE runs Orderly's **multilevel** affiliate program (Orderly One → Affiliates; base referral
