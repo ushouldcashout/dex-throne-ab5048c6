@@ -5,15 +5,17 @@
  * SDK's exported widgets. Widget internals (order validation, submission, streams, TP/SL,
  * leverage dialogs) stay Orderly's; we only own where things sit and how dense they are.
  *
- * Grid (desktop, >= 1024px; mobile layout is untouched):
+ * Grid (desktop, >= 1024px; mobile layout is untouched). Like Hyperliquid there is no
+ * persistent markets sidebar: the symbol in the symbol bar opens Orderly's markets popout
+ * (search, tabs, favourites), so the chart gets the full width.
  *
- *   ┌──────────┬─────────────────────────────┬────────────┬──────────────┐
- *   │          │ symbol bar                  │            │ risk rate    │
- *   │ markets  ├─────────────────────────────┤ orderbook  │ assets       │
- *   │ (left)   │ chart                       │ + trades   │ order entry  │
- *   │          ├─────────────────────────────┴────────────┤              │
- *   │          │ positions / orders / history             │              │
- *   └──────────┴──────────────────────────────────────────┴──────────────┘
+ *   ┌─────────────────────────────────────────┬────────────┬──────────────┐
+ *   │ symbol bar (click symbol → markets)     │            │ risk rate    │
+ *   ├─────────────────────────────────────────┤ orderbook  │ assets       │
+ *   │ chart                                   │ + trades   │ order entry  │
+ *   ├─────────────────────────────────────────┴────────────┤              │
+ *   │ positions / orders / history                         │              │
+ *   └──────────────────────────────────────────────────────┴──────────────┘
  *
  * See docs/THRONE_CHANGES.md.
  */
@@ -28,16 +30,12 @@ import {
 } from "@orderly.network/trading";
 import type { DesktopLayoutProps } from "@orderly.network/trading";
 import { OrderEntryWidget } from "@orderly.network/ui-order-entry";
-import {
-  SideMarketsWidget,
-  SymbolInfoBarFullWidget,
-} from "@orderly.network/markets";
+import { SymbolInfoBarFullWidget } from "@orderly.network/markets";
 import { TradingviewWidget } from "@orderly.network/ui-tradingview";
 import { useAccount } from "@orderly.network/hooks";
 import { AccountStatusEnum } from "@orderly.network/types";
 import "./throne-layout.css";
 
-const MARKETS_W = 236;
 const ORDERBOOK_W = 272;
 const ORDER_ENTRY_W = 296;
 const SYMBOL_BAR_H = 44;
@@ -51,7 +49,7 @@ const ThroneDesktopLayout = (props: DesktopLayoutProps) => {
 
   const gridStyle = useMemo(
     () => ({
-      gridTemplateColumns: `${MARKETS_W}px minmax(420px, 1fr) ${ORDERBOOK_W}px ${ORDER_ENTRY_W}px`,
+      gridTemplateColumns: `minmax(560px, 1fr) ${ORDERBOOK_W}px ${ORDER_ENTRY_W}px`,
       gridTemplateRows: `${SYMBOL_BAR_H}px minmax(360px, 1fr) ${DATA_LIST_H}px`,
     }),
     [],
@@ -59,16 +57,7 @@ const ThroneDesktopLayout = (props: DesktopLayoutProps) => {
 
   return (
     <div className={`throne-desk ${props.className ?? ""}`} style={gridStyle}>
-      {/* markets: full height, left */}
-      <section className="throne-panel throne-markets oui-trading-markets-container">
-        <SideMarketsWidget
-          symbol={props.symbol}
-          onSymbolChange={props.onSymbolChange}
-          panelSize="large"
-        />
-      </section>
-
-      {/* symbol bar over the chart */}
+      {/* symbol bar over the chart; the symbol itself opens the markets popout */}
       <section className="throne-panel throne-symbolbar oui-trading-symbolInfoBar-container">
         <SymbolInfoBarFullWidget
           symbol={props.symbol}
