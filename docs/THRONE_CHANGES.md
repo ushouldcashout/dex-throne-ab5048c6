@@ -17,6 +17,15 @@ Conventions
 
 ## Log
 
+### 2026-09-20 · Docs
+
+- Public docs live in a separate repo, `ushouldcashout/throne-docs` (GitHub Pages, markdown →
+  static HTML via `build.py`). Until `docs.throne.network` is pointed at GitHub Pages the URL is
+  `https://ushouldcashout.github.io/throne-docs/`.
+- `app/throne/referrals/ReferralsPage.tsx`: "Learn more" → docs referrals page (`DOCS_URL`).
+- `public/config.js`: `VITE_CUSTOM_MENUS` gains a **Docs** item. Update both URLs when the custom
+  domain is live.
+
 ### 2026-09-20 · Referrals v2.1: commission-only model (no trader discount)
 
 - Corrected the program model after reading Orderly's builder/affiliate guides and the account's
