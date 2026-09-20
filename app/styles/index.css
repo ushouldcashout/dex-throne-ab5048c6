@@ -11,3 +11,145 @@
   display: none;
 }
 
+/* ------------------------------------------------------------------
+   throne desk: dense terminal layout
+   Everything below is presentation only. It changes sizes, spacing,
+   radii and fonts of the stock Orderly components. No behaviour.
+   ------------------------------------------------------------------ */
+
+:root {
+  --throne-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --throne-hairline: rgba(255, 255, 255, 0.07);
+}
+
+body,
+.oui-scaffold-root {
+  font-family: var(--oui-font-family);
+}
+
+/* numbers in mono, tabular */
+.oui-trading-orderBook-container,
+.oui-table-tbody-td,
+.oui-input-input,
+.oui-symbol-info-bar-desktop [class*="oui-text-base-contrast"]:not([class*="contrast-36"]):not([class*="contrast-54"]) {
+  font-family: var(--throne-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* flat panels with hairline borders instead of raised cards */
+.oui-trading-markets-container,
+.oui-trading-tradingview-container,
+.oui-trading-dataList-container,
+.oui-trading-assetsView-container,
+.oui-trading-riskRate-container,
+.oui-trading-orderBook-container > div,
+.oui-trading-orderEntry-container > div {
+  background: rgb(var(--oui-color-base-9)) !important;
+  border: 1px solid var(--throne-hairline) !important;
+  border-radius: 3px !important;
+  box-shadow: none !important;
+}
+
+button.oui-button,
+.oui-trading-orderEntry-container .oui-input-root {
+  border-radius: 2px !important;
+}
+
+button.oui-button {
+  font-weight: 500 !important;
+}
+
+/* restricted-region strip: thin, full width */
+.oui-scaffold-container > .oui-box.oui-px-2 {
+  padding: 0 !important;
+}
+.oui-scaffold-restricted-info {
+  padding: 4px 8px !important;
+  border-radius: 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--throne-hairline) !important;
+  font-size: 12px !important;
+}
+.oui-scaffold-restricted-info * {
+  font-size: 12px !important;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+
+  /* collapse the gaps between the main panels */
+  .oui-box.oui-gap-2:has(> .w-split),
+  .oui-box.oui-gap-2:has(> .oui-trading-tradingview-container),
+  .oui-box.oui-gap-2:has(> .oui-trading-orderEntry-container),
+  .oui-box.oui-gap-2:has(> .oui-trading-markets-container),
+  .oui-trading-orderEntry-container {
+    gap: 1px !important;
+  }
+  .w-split-gutter,
+  [class*="gutter"] {
+    background: transparent !important;
+  }
+
+  /* top nav */
+  .oui-scaffold-topNavbar {
+    height: 40px !important;
+  }
+  .oui-scaffold-topNavbar * {
+    font-size: 13px;
+  }
+  .oui-main-nav a,
+  .oui-main-nav button {
+    font-weight: 500 !important;
+  }
+
+  /* symbol info bar */
+  .oui-trading-symbolInfoBar-container {
+    height: 44px !important;
+    margin: 0 !important;
+  }
+  .oui-symbol-info-bar-desktop * {
+    font-size: 12px !important;
+  }
+
+  /* orderbook */
+  .oui-trading-orderBook-container * {
+    font-size: 12px !important;
+    font-weight: 400 !important;
+  }
+  .oui-trading-orderBook-container [class*="cursor-pointer"].oui-flex-row {
+    height: 19px !important;
+    min-height: 19px !important;
+  }
+
+  /* tables: positions, orders, markets */
+  .oui-table-thead-th {
+    height: 26px !important;
+    font-size: 11px !important;
+  }
+  .oui-table-tbody-td {
+    height: 28px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    font-size: 12px !important;
+  }
+
+  /* panels */
+  .oui-trading-dataList-container {
+    padding: 0 8px !important;
+  }
+  .oui-trading-assetsView-container {
+    padding: 8px 10px !important;
+  }
+
+  /* order entry */
+  .oui-trading-orderEntry-container * {
+    font-size: 12px;
+  }
+  .oui-trading-orderEntry-container h1,
+  .oui-trading-orderEntry-container h2,
+  .oui-trading-orderEntry-container h3 {
+    font-size: 14px !important;
+  }
+}
