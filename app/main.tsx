@@ -34,6 +34,9 @@ const SwapLayout = lazy(() => import("./pages/swap/Layout"));
 const SwapIndex = lazy(() => import("./pages/swap/Index"));
 const PointsLayout = lazy(() => import("./pages/points/Layout"));
 const PointsIndex = lazy(() => import("./pages/points/Index"));
+// THRONE: banner (referral) page
+const BannerLayout = lazy(() => import("./pages/banner/Layout"));
+const BannerIndex = lazy(() => import("./pages/banner/Index"));
 
 async function loadRuntimeConfig() {
   return new Promise<void>((resolve) => {
@@ -116,6 +119,12 @@ const router = createBrowserRouter(
           path: "points",
           element: <PointsLayout />,
           children: [{ index: true, element: <PointsIndex /> }],
+        },
+        {
+          // THRONE: banner (referral) page
+          path: "banner",
+          element: <BannerLayout />,
+          children: [{ index: true, element: <BannerIndex /> }],
         },
       ],
     },
