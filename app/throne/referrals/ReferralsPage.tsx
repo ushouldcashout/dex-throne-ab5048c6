@@ -33,8 +33,8 @@ const DESK_URL = "https://trade.throne.network";
 // can become the ?ref= desk link.
 const SHARE_URL = "https://throne.network";
 const X_URL = "https://x.com/thronedefi";
-// Public docs. Swap to https://docs.throne.network once the DNS record exists.
-const DOCS_URL = "https://ushouldcashout.github.io/throne-docs/referrals.html";
+// Public docs.
+const DOCS_URL = "https://docs.throne.network/referrals.html";
 
 function copy(text: string, what = "Copied") {
   navigator.clipboard?.writeText(text).then(
