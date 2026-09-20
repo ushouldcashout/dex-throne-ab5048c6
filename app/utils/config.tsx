@@ -212,8 +212,8 @@ export const useOrderlyConfig = () => {
       discordUrl: getRuntimeConfig("VITE_DISCORD_URL") || undefined,
       twitterUrl: getRuntimeConfig("VITE_TWITTER_URL") || undefined,
       trailing: (
-        <span className="oui-text-2xs oui-text-base-contrast-54">
-          Charts powered by{" "}
+        <span className="oui-text-2xs oui-text-base-contrast-36">
+          Charts by{" "}
           <a
             href="https://tradingview.com"
             target="_blank"
@@ -421,12 +421,9 @@ export const useOrderlyConfig = () => {
           </Flex>
 
           <Flex itemAlign={"center"} className="oui-gap-2">
-            {components.accountSummary}
-            {components.linkDevice}
-            {components.scanQRCode}
+            {/* THRONE: single chain (Robinhood), no chain menu / QR / device link */}
             {components.languageSwitcher}
             {components.subAccount}
-            {components.chainMenu}
             {components.walletConnect}
           </Flex>
         </Flex>
