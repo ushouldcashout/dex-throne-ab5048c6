@@ -3,14 +3,18 @@
  *
  * Replaces Orderly's stock Affiliates page. Structure and vocabulary follow the standard
  * perp-DEX referrals page traders already know (Referrals · Traders Referred · Rewards Earned ·
- * Enter Code · Create Code · Address / Date Joined / Total Volume / Fees Paid / Your Rewards).
+ * Create Code · Enter Code · Address / Date Joined / Total Volume / Fees Paid / Your Rewards).
  * The skin is THRONE's. One extra over the standard page: a Rewards History tab with a daily
  * rewards chart and ledger.
  *
- * Data: Orderly referral API via @orderly.network/hooks (see useReferralData.ts). Rewards settle
- * daily to the desk balance, so there is no "claim" step.
+ * Flows
+ *  - Create Code (primary): self-serve. Any signed-in account past the volume prerequisite
+ *    (0 USDC on THRONE) picks a code name and claims it. Rename allowed until someone binds.
+ *  - Enter Code (secondary): only for accounts that have not traded yet, since Orderly binds a
+ *    referral at sign-up and a bound code is permanent.
+ *  - No "Claim Rewards": Orderly pays rebates to the desk balance daily.
  *
- * See docs/THRONE_CHANGES.md.
+ * Data: see useReferralData.ts. Notes in docs/THRONE_CHANGES.md.
  */
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { toast } from "@orderly.network/ui";
@@ -43,13 +47,19 @@ function copy(text: string, what = "Copied") {
   );
 }
 
-type Modal = null | "enter" | "create" | "split";
+function cleanCode(raw: string) {
+  return raw.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, REFERRAL_CODE_MAX_LENGTH);
+}
+
+type Modal = null | "enter" | "create" | "rename" | "split";
 
 export default function ReferralsPage() {
   const d = useReferralData();
   const [modal, setModal] = useState<Modal>(null);
   const [tab, setTab] = useState<"referrals" | "history">("referrals");
-  const r = d.info?.referrer_info;
+  const t = d.totals;
+  // Enter Code is only meaningful for accounts that have not been referred and have not traded
+  const canEnter = d.ready && !d.isReferred && d.lifetimeVolume <= 0;
 
   return (
     <div className="rf">
@@ -62,46 +72,50 @@ export default function ReferralsPage() {
           </div>
         </div>
         <div className="rf-actions">
-          {d.isReferred ? (
-            <span className="rf-btn ghost" title="You joined with this code">
-              Referred by <span className="code gold">{d.referredBy}</span>
-            </span>
-          ) : (
-            <button className="rf-btn" disabled={!d.ready} onClick={() => setModal("enter")}>Enter Code</button>
-          )}
           {d.hasCode ? (
             <button className="rf-btn solid" onClick={() => copy(`${DESK_URL}/?ref=${d.code!.code}`, "Referral link copied")}>
               Copy Referral Link
             </button>
           ) : (
-            <button className="rf-btn solid" disabled={!d.ready} onClick={() => setModal("create")}>Create Code</button>
+            <button className="rf-btn solid" disabled={!d.ready} onClick={() => setModal("create")}>
+              Create Code
+            </button>
           )}
+          {d.isReferred ? (
+            <span className="rf-btn ghost" title="The code this account joined with">
+              Referred by <span className="code gold">{d.referredBy}</span>
+            </span>
+          ) : canEnter ? (
+            <button className="rf-btn ghost" onClick={() => setModal("enter")}>Enter Code</button>
+          ) : null}
         </div>
       </div>
 
       <div className="rf-cards">
         <Card
           label="Traders Referred"
-          value={d.ready ? String(r?.total_invites ?? 0) : "—"}
-          note={d.ready && r ? `${r.total_traded ?? 0} have traded · ${r["30d_invites"] ?? 0} joined in 30d` : undefined}
+          value={d.ready ? String(t.invites) : "—"}
+          note={d.ready && d.hasCode ? `${t.traded} have traded · ${t.invites30} joined in the last 30d` : undefined}
           loading={d.infoLoading}
         />
         <Card
           label="Rewards Earned"
-          value={d.ready ? usd(r?.total_referrer_rebate ?? 0) : "—"}
-          note={d.ready && r ? `${usd(r["30d_referrer_rebate"] ?? 0)} in the last 30d` : undefined}
+          value={d.ready ? usd(t.rewards) : "—"}
+          note={d.ready && d.hasCode ? `${usd(t.rewards30)} in the last 30d` : undefined}
           gold
           loading={d.infoLoading}
         />
         <Card
           label="Pending Rewards"
           value={d.ready ? usd(d.pending) : "—"}
-          note="Settles daily at 00:00 UTC to your desk balance"
+          note="Paid daily at 00:00 UTC to your desk balance"
           loading={d.infoLoading}
         />
       </div>
 
-      {d.ready && d.hasCode && <CodeStrip d={d} onEditSplit={() => setModal("split")} />}
+      {d.ready && d.hasCode && (
+        <CodeStrip d={d} onEditSplit={() => setModal("split")} onRename={() => setModal("rename")} />
+      )}
       {d.ready && !d.hasCode && d.isReferred && <ReferredStrip d={d} />}
 
       <div className="rf-panel">
@@ -109,11 +123,12 @@ export default function ReferralsPage() {
           <button className={`rf-tab${tab === "referrals" ? " on" : ""}`} onClick={() => setTab("referrals")}>Referrals</button>
           <button className={`rf-tab${tab === "history" ? " on" : ""}`} onClick={() => setTab("history")}>Rewards History</button>
         </div>
-        {tab === "referrals" ? <ReferralsTable d={d} /> : <HistoryTab d={d} />}
+        {tab === "referrals" ? <ReferralsTable d={d} onCreate={() => setModal("create")} /> : <HistoryTab d={d} />}
       </div>
 
       {modal === "enter" && <EnterCodeModal d={d} onClose={() => setModal(null)} />}
       {modal === "create" && <CreateCodeModal d={d} onClose={() => setModal(null)} />}
+      {modal === "rename" && d.code && <RenameCodeModal d={d} onClose={() => setModal(null)} />}
       {modal === "split" && d.code && <SplitModal d={d} onClose={() => setModal(null)} />}
     </div>
   );
@@ -133,11 +148,13 @@ function Card({ label, value, note, gold, loading }: { label: string; value: str
 
 /* ---------- strips ---------- */
 
-function CodeStrip({ d, onEditSplit }: { d: ReferralData; onEditSplit: () => void }) {
+function CodeStrip({ d, onEditSplit, onRename }: { d: ReferralData; onEditSplit: () => void; onRename: () => void }) {
   const code = d.code!;
   const link = `${DESK_URL}/?ref=${code.code}`;
-  const keep = Math.round(d.split.keep * 100);
-  const tweet = `I trade stocks and crypto perps on the THRONE desk. Join with my referral code ${code.code} and pay less on every trade. ${SHARE_URL}`;
+  const total = d.referrerRate + d.refereeRate || 1;
+  const keep = Math.round((d.referrerRate / total) * 100);
+  const tweet = `I trade stocks and crypto perps on the THRONE desk. Sign up with my referral code ${code.code} and pay less on every trade. ${SHARE_URL}`;
+  const renamable = d.totals.invites === 0;
   return (
     <div className="rf-strip">
       <span className="k">Your code</span>
@@ -149,6 +166,7 @@ function CodeStrip({ d, onEditSplit }: { d: ReferralData; onEditSplit: () => voi
         <span className="bigcode">{code.code}</span>
       )}
       <button className="rf-btn ghost sm" onClick={() => copy(code.code, "Code copied")}>Copy</button>
+      {renamable && <button className="rf-btn ghost sm" onClick={onRename}>Rename</button>}
       <span className="sep" />
       <span className="link">{link.replace("https://", "")}</span>
       <button className="rf-btn ghost sm" onClick={() => copy(link, "Referral link copied")}>Copy link</button>
@@ -185,15 +203,8 @@ function ReferredStrip({ d }: { d: ReferralData }) {
 
 /* ---------- referrals table ---------- */
 
-const SORTS: Record<string, [ReferralSort, ReferralSort]> = {
-  joined: ["descending_code_binding_time", "ascending_code_binding_time"],
-  volume: ["descending_volume", "ascending_volume"],
-  rewards: ["descending_referral_rebate", "ascending_referral_rebate"],
-};
-
-function ReferralsTable({ d }: { d: ReferralData }) {
+function ReferralsTable({ d, onCreate }: { d: ReferralData; onCreate: () => void }) {
   const [q, setQ] = useState("");
-  const r = d.info?.referrer_info;
   const rows = useMemo(() => {
     const s = q.trim().toLowerCase();
     return s ? d.referrals.filter((x) => x.address.toLowerCase().includes(s)) : d.referrals;
@@ -203,16 +214,11 @@ function ReferralsTable({ d }: { d: ReferralData }) {
   const from = total ? (d.page - 1) * PAGE_SIZE + 1 : 0;
   const to = Math.min(total, d.page * PAGE_SIZE);
 
-  const th = (key: keyof typeof SORTS, label: string, right = false) => {
-    const [desc, asc] = SORTS[key];
-    const on = d.sort === desc || d.sort === asc;
+  const th = (key: ReferralSort, label: string, right = false) => {
+    const on = d.sort === key;
     return (
-      <button
-        className={on ? "on" : ""}
-        style={{ justifyContent: right ? "flex-end" : "flex-start", width: "100%" }}
-        onClick={() => { d.setSort(d.sort === desc ? asc : desc); d.setPage(1); }}
-      >
-        {label} <span className="arr">{!on ? "" : d.sort === desc ? "▼" : "▲"}</span>
+      <button className={on ? "on" : ""} style={{ justifyContent: right ? "flex-end" : "flex-start", width: "100%" }} onClick={() => d.setSort(key)}>
+        {label} <span className="arr">{!on ? "" : d.sortDesc ? "▼" : "▲"}</span>
       </button>
     );
   };
@@ -228,14 +234,16 @@ function ReferralsTable({ d }: { d: ReferralData }) {
     body = (
       <div className="rf-empty">
         No referrals yet
-        <div className="hint">Create a code, share your link, and traders who join with it appear here.</div>
+        <div className="hint">
+          <button className="rf-link" onClick={onCreate}>Create your code</button>, share the link, and traders who sign up with it appear here.
+        </div>
       </div>
     );
   } else if (rows.length === 0) {
     body = (
       <div className="rf-empty">
         {q ? "No referral matches that address on this page." : "No referrals yet"}
-        {!q && <div className="hint">Share your link. Traders who join with your code appear here.</div>}
+        {!q && <div className="hint">Share your link. Traders who sign up with your code appear here.</div>}
       </div>
     );
   } else {
@@ -250,19 +258,17 @@ function ReferralsTable({ d }: { d: ReferralData }) {
             </span>
             <span className="c2 dim"><span className="lbl">Joined</span>{dateTimeUtc(x.joinedAt)}</span>
             <span className="c3 right"><span className="lbl">Volume</span>{usd0(x.volume)}</span>
-            <span className="c4 right dim"><span className="lbl">Fees</span>{usd(x.fee)}</span>
+            <span className="c4 right dim"><span className="lbl">Fees</span>{typeof x.fee === "number" ? usd(x.fee) : "—"}</span>
             <span className="c5 right gold"><span className="lbl">Rewards</span>{usd(x.rewards)}</span>
           </div>
         ))}
-        {r && (
-          <div className="rf-tr sum">
-            <span className="dim">{r.total_invites} traders</span>
-            <span />
-            <span className="right">{usd0(r.total_referee_volume)}</span>
-            <span className="right dim">{usd(r.total_referee_fee)}</span>
-            <span className="right gold">{usd(r.total_referrer_rebate)}</span>
-          </div>
-        )}
+        <div className="rf-tr sum">
+          <span className="dim">{d.totals.invites} traders</span>
+          <span />
+          <span className="right">{usd0(d.totals.volume)}</span>
+          <span className="right dim">{d.totals.fees ? usd(d.totals.fees) : "—"}</span>
+          <span className="right gold">{usd(d.totals.rewards)}</span>
+        </div>
       </>
     );
   }
@@ -379,24 +385,46 @@ function ModalShell({ title, onClose, children }: { title: string; onClose: () =
   );
 }
 
-function EnterCodeModal({ d, onClose }: { d: ReferralData; onClose: () => void }) {
-  const [raw, setRaw] = useState("");
-  const code = raw.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, REFERRAL_CODE_MAX_LENGTH);
-  const lengthOk = code.length >= REFERRAL_CODE_MIN_LENGTH;
-  const { isExist, isLoading } = useCheckReferralCode(lengthOk ? code : undefined);
+/** Shared code input with live availability / validity check (a hook: returns { ok, node }). */
+function useCodeField({
+  value, onChange, mode, label, placeholder,
+}: { value: string; onChange: (v: string) => void; mode: "exists" | "available"; label: string; placeholder: string }) {
+  const lengthOk = value.length >= REFERRAL_CODE_MIN_LENGTH;
+  const { isExist, isLoading } = useCheckReferralCode(lengthOk ? value : undefined);
+  let status = "";
+  let cls = "mute";
+  if (value && !lengthOk) status = `${REFERRAL_CODE_MIN_LENGTH}–${REFERRAL_CODE_MAX_LENGTH} characters`;
+  else if (lengthOk && isLoading) status = "Checking…";
+  else if (lengthOk && typeof isExist === "boolean") {
+    const good = mode === "exists" ? isExist : !isExist;
+    status = mode === "exists" ? (isExist ? "✓ Valid code" : "Code not found") : isExist ? "Taken" : "✓ Available";
+    cls = good ? "green" : "red";
+  }
+  const ok = lengthOk && !isLoading && (mode === "exists" ? isExist === true : isExist === false);
+  return {
+    ok,
+    node: (
+      <div className="rf-field">
+        <label>{label}</label>
+        <div className="box">
+          <input value={value} onChange={(e) => onChange(cleanCode(e.target.value))} placeholder={placeholder} spellCheck={false} autoFocus />
+          <span className={`st ${cls}`}>{status}</span>
+        </div>
+      </div>
+    ),
+  };
+}
 
-  // prefill from ?ref= (Orderly also stores it and binds at account creation)
+function EnterCodeModal({ d, onClose }: { d: ReferralData; onClose: () => void }) {
+  const [code, setCode] = useState("");
   useEffect(() => {
     const ref = new URLSearchParams(window.location.search).get("ref") || localStorage.getItem("referral_code");
-    if (ref) setRaw(ref);
+    if (ref) setCode(cleanCode(ref));
   }, []);
-
-  const status = !code ? "" : !lengthOk ? `${REFERRAL_CODE_MIN_LENGTH}–${REFERRAL_CODE_MAX_LENGTH} characters`
-    : isLoading ? "Checking…" : isExist ? "✓ Valid code" : "Code not found";
-  const cls = isExist ? "green" : lengthOk && !isLoading && isExist === false ? "red" : "mute";
+  const field = useCodeField({ value: code, onChange: setCode, mode: "exists", label: "Referral code", placeholder: "CODE" });
 
   const submit = async () => {
-    if (!isExist) return;
+    if (!field.ok) return;
     try {
       await d.bindCode({ referral_code: code });
       toast.success(`Code ${code} applied`);
@@ -410,63 +438,99 @@ function EnterCodeModal({ d, onClose }: { d: ReferralData; onClose: () => void }
 
   return (
     <ModalShell title="Enter Referral Code" onClose={onClose}>
-      <div className="p">Enter a code from another trader to get a discount on your trading fees.</div>
-      <div className="rf-field">
-        <label>Referral code</label>
-        <div className="box">
-          <input value={code} onChange={(e) => setRaw(e.target.value)} placeholder="CODE" spellCheck={false} autoFocus />
-          <span className={`st ${cls}`}>{status}</span>
-        </div>
+      <div className="p">
+        Have a code from another trader? Enter it to get about {pct(discountFraction(d.takerBps, d.refereeRate))} off your trading fees.
+        Codes can only be applied to accounts that haven't traded yet, and can't be changed later.
       </div>
-      <div className="rf-kv">
-        <div><span>Default fee discount</span><span className="green">~{pct(discountFraction(d.takerBps, 0.4))} of taker fees</span></div>
-        <div><span>Effective taker fee</span><span>{bps(effectiveTakerBps(d.takerBps, 0.4))} (from {bps(d.takerBps, 1)})</span></div>
-      </div>
-      <div className="small">Each code sets its own split, so the exact discount shows after you enter it. A code can only be set once per account.</div>
+      {field.node}
       <div className="actions">
         <button className="rf-btn ghost" onClick={onClose}>Cancel</button>
-        <button className="rf-btn solid" disabled={!isExist || d.bindMutating} onClick={submit}>{d.bindMutating ? "Applying…" : "Enter Code"}</button>
+        <button className="rf-btn solid" disabled={!field.ok || d.bindMutating} onClick={submit}>{d.bindMutating ? "Applying…" : "Enter Code"}</button>
       </div>
     </ModalShell>
   );
 }
 
 function CreateCodeModal({ d, onClose }: { d: ReferralData; onClose: () => void }) {
-  const a = d.autoCode;
-  const auto = a && typeof a.required_volume === "number" && a.required_volume > 0;
-  const done = auto ? Math.min(1, (a!.completed_volume ?? 0) / a!.required_volume!) : 0;
+  const [code, setCode] = useState("");
+  const field = useCodeField({ value: code, onChange: setCode, mode: "available", label: "Your referral code", placeholder: "e.g. KINGMAKER" });
+  const req = d.prereq?.required_volume ?? 0;
+  const cur = d.prereq?.current_volume ?? 0;
+  const locked = req > 0 && cur < req;
+  const total = d.referrerRate + d.refereeRate || 1;
+  const keep = Math.round((d.referrerRate / total) * 100);
+
+  const submit = async () => {
+    if (!field.ok) return;
+    try {
+      const res = await d.claimCode({ referral_code: code, referee_rebate_rate: d.refereeRate });
+      if (res && res.success === false) throw new Error(res.message || "Couldn't create the code");
+      toast.success(`Code ${code} created`);
+      await d.refreshAll();
+      onClose();
+    } catch (e: any) {
+      toast.error(e?.message || String(e));
+    }
+  };
+
   return (
     <ModalShell title="Create Referral Code" onClose={onClose}>
-      {auto ? (
+      {locked ? (
         <>
-          <div className="p">Your referral code unlocks after {usd0(a!.required_volume)} of trading volume on the desk.</div>
-          <div className="rf-progress"><span style={{ width: `${done * 100}%` }} /></div>
-          <div className="rf-kv">
-            <div><span>Your volume</span><span>{usd0(a!.completed_volume)} · {pct(done)}</span></div>
-            {a!.auto_referral_code && <div><span>Reserved code</span><span className="gold">{a!.auto_referral_code}</span></div>}
+          <div className="p">Referral codes unlock after {usd0(req)} of trading volume on the desk.</div>
+          <div className="rf-progress"><span style={{ width: `${Math.min(100, (cur / req) * 100)}%` }} /></div>
+          <div className="rf-kv"><div><span>Your volume</span><span>{usd0(cur)} · {pct(Math.min(1, cur / req))}</span></div></div>
+          <div className="actions">
+            <button className="rf-btn ghost" onClick={onClose}>Close</button>
+            <a className="rf-btn solid" href="/" style={{ textDecoration: "none" }}>Trade</a>
           </div>
         </>
       ) : (
         <>
           <div className="p">
-            Referral codes are issued by the desk while the program is new. Message @thronedefi with your handle and how you plan to
-            share it, and your code appears here once created.
+            Pick your code. Traders who sign up with it get a fee discount, and you earn a share of the fees on every trade they make.
+            Paid daily, no cap, no expiry.
           </div>
+          {field.node}
           <div className="rf-kv">
-            <div><span>Default split</span><span>You earn <span className="gold">60%</span> · traders get <span className="green">40%</span> off</span></div>
-            <div><span>You earn per $100k referred volume</span><span className="gold">{usd(referrerPer100k(0.6))}</span></div>
-            <div><span>A trader saves per $100k of their volume</span><span className="green">{usd(traderPer100k(0.4))}</span></div>
+            <div><span>Default split</span><span>You earn <span className="gold">{keep}%</span> · traders get <span className="green">{100 - keep}%</span> off</span></div>
+            <div><span>You earn per $100k referred volume</span><span className="gold">{usd(referrerPer100k(d.referrerRate, d.takerBps))}</span></div>
+            <div><span>Your traders' fee discount</span><span className="green">~{pct(discountFraction(d.takerBps, d.refereeRate))}</span></div>
           </div>
-          <div className="small">Rewards are a share of the desk's fee revenue on your referred traders' taker volume, paid daily to your balance. No cap, no expiry.</div>
+          <div className="small">Letters and numbers, {REFERRAL_CODE_MIN_LENGTH}–{REFERRAL_CODE_MAX_LENGTH} characters. You can rename it until someone signs up with it, and change the split any time.</div>
+          <div className="actions">
+            <button className="rf-btn ghost" onClick={onClose}>Cancel</button>
+            <button className="rf-btn solid" disabled={!field.ok || d.claimMutating} onClick={submit}>{d.claimMutating ? "Creating…" : "Create Code"}</button>
+          </div>
         </>
       )}
+    </ModalShell>
+  );
+}
+
+function RenameCodeModal({ d, onClose }: { d: ReferralData; onClose: () => void }) {
+  const current = d.code!.code;
+  const [code, setCode] = useState("");
+  const field = useCodeField({ value: code, onChange: setCode, mode: "available", label: "New code", placeholder: current });
+  const submit = async () => {
+    if (!field.ok) return;
+    try {
+      const res = await d.renameCode({ current_referral_code: current, new_referral_code: code });
+      if (res && res.success === false) throw new Error(res.message || "Couldn't rename the code");
+      toast.success(`Code renamed to ${code}`);
+      await d.refreshAll();
+      onClose();
+    } catch (e: any) {
+      toast.error(e?.message || String(e));
+    }
+  };
+  return (
+    <ModalShell title="Rename Referral Code" onClose={onClose}>
+      <div className="p">Renaming is possible until a trader signs up with your code. Links using the old code stop working.</div>
+      {field.node}
       <div className="actions">
-        <button className="rf-btn ghost" onClick={onClose}>Close</button>
-        {auto ? (
-          <a className="rf-btn solid" href="/" style={{ textDecoration: "none" }}>Trade</a>
-        ) : (
-          <a className="rf-btn solid" href={X_URL} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>Request a Code</a>
-        )}
+        <button className="rf-btn ghost" onClick={onClose}>Cancel</button>
+        <button className="rf-btn solid" disabled={!field.ok || d.renameMutating} onClick={submit}>{d.renameMutating ? "Renaming…" : "Rename"}</button>
       </div>
     </ModalShell>
   );
@@ -474,18 +538,24 @@ function CreateCodeModal({ d, onClose }: { d: ReferralData; onClose: () => void 
 
 function SplitModal({ d, onClose }: { d: ReferralData; onClose: () => void }) {
   const code = d.code!;
-  const [keep, setKeep] = useState(Math.round(d.split.keep * 100));
+  const total = d.referrerRate + d.refereeRate || d.assignedRate || 1;
+  const [keep, setKeep] = useState(Math.round((d.referrerRate / total) * 100));
   const give = 100 - keep;
-  // keep the code's total rebate unchanged; only move the line between you and your traders
-  const total = code.referrer_rebate_rate + code.referee_rebate_rate || code.max_rebate_rate || 1;
+  const refereeRate = total * (give / 100);
+  const referrerRate = total * (keep / 100);
 
   const confirm = async () => {
     try {
-      await d.editSplit({
-        referral_code: code.code,
-        referrer_rebate_rate: +(total * (keep / 100)).toFixed(6),
-        referee_rebate_rate: +(total * (give / 100)).toFixed(6),
-      });
+      if (d.isMultilevel) {
+        const res = await d.updateRate({ referee_rebate_rate: +refereeRate.toFixed(6) });
+        if (res && res.success === false) throw new Error(res.message || "Couldn't update the split");
+      } else {
+        await d.editSplitLegacy({
+          referral_code: code.code,
+          referrer_rebate_rate: +referrerRate.toFixed(6),
+          referee_rebate_rate: +refereeRate.toFixed(6),
+        });
+      }
       toast.success("Split updated");
       await d.refreshAll();
       onClose();
@@ -496,7 +566,7 @@ function SplitModal({ d, onClose }: { d: ReferralData; onClose: () => void }) {
 
   return (
     <ModalShell title={`Edit Split · ${code.code}`} onClose={onClose}>
-      <div className="p">Choose how the referral reward is shared between you and the traders who use your code.</div>
+      <div className="p">Choose how the referral reward is shared between you and the traders who sign up with your code.</div>
       <div className="row">
         <button className="rf-btn ghost sm" onClick={() => setKeep((k) => Math.max(0, k - 5))}>−5%</button>
         <div className="rf-slider">
@@ -507,9 +577,9 @@ function SplitModal({ d, onClose }: { d: ReferralData; onClose: () => void }) {
       <div className="rf-kv">
         <div><span>You earn</span><span className="gold">{keep}%</span></div>
         <div><span>Your traders get</span><span className="green">{give}% as a fee discount</span></div>
-        <div><span>You earn per $100k referred volume</span><span className="gold">{usd(referrerPer100k(keep / 100))}</span></div>
-        <div><span>A trader saves per $100k of their volume</span><span className="green">{usd(traderPer100k(give / 100))}</span></div>
-        <div><span>Their effective taker fee</span><span>{bps(effectiveTakerBps(d.takerBps, give / 100))}</span></div>
+        <div><span>You earn per $100k referred volume</span><span className="gold">{usd(referrerPer100k(referrerRate, d.takerBps))}</span></div>
+        <div><span>A trader saves per $100k of their volume</span><span className="green">{usd(traderPer100k(refereeRate, d.takerBps))}</span></div>
+        <div><span>Their effective taker fee</span><span>{bps(effectiveTakerBps(d.takerBps, refereeRate))}</span></div>
       </div>
       <div className="small">Applies to future trades only. Rewards already paid are unchanged.</div>
       <div className="actions">

@@ -107,6 +107,8 @@
 .rf-tr.hist { grid-template-columns: 1.3fr 1.2fr 0.9fr 1fr 0.8fr; }
 .rf-empty { padding: 14px 20px 20px; color: var(--rf-text); font-size: 14px; }
 .rf-empty .hint { color: var(--rf-mute); font-size: 12px; margin-top: 4px; }
+.rf-link { color: var(--rf-gold); text-decoration: underline; font-size: inherit; }
+.rf-link:hover { color: var(--rf-gold-2); }
 .rf-foot { margin-top: auto; display: flex; justify-content: flex-end; align-items: center; gap: 12px; padding: 14px 20px; font-size: 13px; color: var(--rf-dim); }
 .rf-foot button { color: var(--rf-dim); font-size: 16px; line-height: 1; padding: 2px 6px; }
 .rf-foot button:hover:not(:disabled) { color: var(--rf-text); }

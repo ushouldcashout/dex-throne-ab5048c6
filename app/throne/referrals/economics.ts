@@ -1,57 +1,61 @@
 /**
  * THRONE referral economics used for previews on the Referrals page.
  *
- * Orderly computes and settles the real rebates. These constants only drive the
- * "per $100k" previews, the effective-fee readout and the discount percentage, so they
- * must mirror the broker settings in Orderly One → Growth → Affiliates:
+ * Orderly computes and settles the real rebates. These constants only drive the "per $100k"
+ * previews and the effective-fee readout, so they must mirror Orderly One → Fees / Affiliates:
  *
  *   taker fee            4.5 bps   (Orderly One → Fees)
  *   Orderly's flat cut   2.5 bps
- *   THRONE revenue       2.0 bps
- *   referral commission  40% of THRONE revenue = 0.8 bps of every referred trader's taker volume
+ *   THRONE net           2.0 bps   = taker − Orderly cut
+ *   referral commission  40% of THRONE net (Orderly One → Affiliates → "Base referral commission")
  *
- * The 0.8 bps pool is then split between referrer and referred trader by the code's own
- * referrer_rebate_rate / referee_rebate_rate (default 60/40).
+ * How Orderly stores rates (docs: Affiliate & Referral Program): every rate is a fraction of the
+ * builder's NET profit, not of the whole fee. A code with 40% commission split 60/40 is stored as
+ * referrer_rebate_rate 0.24 and referee_rebate_rate 0.16. So a trader's discount on the taker fee
+ * is 0.16 × 2.0 / 4.5 ≈ 7%, and the referrer earns 0.24 × 2.0 bps = 0.48 bps of referred volume.
  *
  * If the fee or the commission share changes in Orderly One, change it here too.
  */
 export const TAKER_FEE_BPS_DEFAULT = 4.5;
-export const REWARD_POOL_BPS = 0.8;
+export const ORDERLY_CUT_BPS = 2.5;
+export const COMMISSION_SHARE_DEFAULT = 0.4; // of net; Orderly One "Base referral commission"
 
-/** Fraction of the pool a code gives back to the trader, normalised so keep + give = 1. */
+/** THRONE's net per unit of taker volume, in bps. */
+export function netBps(takerBps: number) {
+  return Math.max(0, takerBps - ORDERLY_CUT_BPS);
+}
+
+/** Normalised split so keep + give = 1 (works whether rates are 0.24/0.16 or 0.6/0.4). */
 export function splitShares(referrerRate: number, refereeRate: number) {
   const total = referrerRate + refereeRate;
   if (!total) return { keep: 1, give: 0 };
   return { keep: referrerRate / total, give: refereeRate / total };
 }
 
-/** USD earned by the referrer per $100k of referred taker volume. */
-export function referrerPer100k(keep: number) {
-  return 100_000 * (REWARD_POOL_BPS / 10_000) * keep;
+/** USD the referrer earns per $100k of referred taker volume. `referrerRate` is a fraction of net. */
+export function referrerPer100k(referrerRate: number, takerBps = TAKER_FEE_BPS_DEFAULT) {
+  return 100_000 * (netBps(takerBps) / 10_000) * referrerRate;
 }
 
-/** USD saved by the trader per $100k of their own taker volume. */
-export function traderPer100k(give: number) {
-  return 100_000 * (REWARD_POOL_BPS / 10_000) * give;
+/** USD a referred trader saves per $100k of their taker volume. `refereeRate` is a fraction of net. */
+export function traderPer100k(refereeRate: number, takerBps = TAKER_FEE_BPS_DEFAULT) {
+  return 100_000 * (netBps(takerBps) / 10_000) * refereeRate;
 }
 
-/** Trader's effective taker fee in bps after the banner discount. */
-export function effectiveTakerBps(takerBps: number, give: number) {
-  return takerBps - REWARD_POOL_BPS * give;
-}
-
-/** Trader's discount as a fraction of the taker fee (0.07 = 7%). */
-export function discountFraction(takerBps: number, give: number) {
+/** Trader's discount as a fraction of the taker fee (0.07 = 7%). `refereeRate` is a fraction of net. */
+export function discountFraction(takerBps: number, refereeRate: number) {
   if (!takerBps) return 0;
-  return (REWARD_POOL_BPS * give) / takerBps;
+  return (netBps(takerBps) * refereeRate) / takerBps;
+}
+
+/** Trader's effective taker fee in bps after the discount. */
+export function effectiveTakerBps(takerBps: number, refereeRate: number) {
+  return takerBps * (1 - discountFraction(takerBps, refereeRate));
 }
 
 /**
- * Discount fraction for a sworn trader, best source first:
- *  1. actuals: Σ referee_rebate / Σ fee from the daily referee summary (self-correcting);
- *  2. the code's referee_rebate_rate. Orderly stores it either as a fraction of the whole fee
- *     (≈0.07) or as a share of the pool (≈0.4) depending on how the program was configured, so
- *     treat anything at or below the pool/fee ratio as a fee fraction and anything above as a share.
+ * Discount fraction for a referred trader: actuals (Σ referee_rebate / Σ fee) when there is
+ * history, otherwise the code's referee rate.
  */
 export function refereeDiscountFraction(
   takerBps: number,
@@ -59,7 +63,5 @@ export function refereeDiscountFraction(
   actuals?: { rebate: number; fee: number },
 ) {
   if (actuals && actuals.fee > 0) return actuals.rebate / actuals.fee;
-  if (typeof refereeRate !== "number" || !takerBps) return discountFraction(takerBps, 0.4);
-  const poolFrac = REWARD_POOL_BPS / takerBps;
-  return refereeRate <= poolFrac + 1e-9 ? refereeRate : refereeRate * poolFrac;
+  return discountFraction(takerBps, refereeRate ?? COMMISSION_SHARE_DEFAULT * 0.4);
 }
