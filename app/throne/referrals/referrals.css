@@ -23,8 +23,6 @@
   font-size: 14px;
   line-height: 1.45;
   padding: 28px 28px 32px;
-  max-width: 1440px;
-  margin: 0 auto;
   min-height: calc(100vh - 100px);
 }
 .rf .mono { font-family: var(--rf-mono); }
@@ -36,9 +34,10 @@
 .rf .right { text-align: right; }
 .rf a { color: var(--rf-green); text-decoration: none; }
 .rf a:hover { color: var(--rf-gold); }
-.rf button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
-.rf button:disabled { cursor: default; opacity: 0.45; }
-.rf input { font: inherit; color: var(--rf-text); background: transparent; border: 0; outline: none; width: 100%; }
+/* zero-specificity resets so component classes below always win */
+:where(.rf button) { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+:where(.rf button:disabled) { cursor: default; opacity: 0.45; }
+:where(.rf input) { font: inherit; color: var(--rf-text); background: transparent; border: 0; outline: none; width: 100%; }
 .rf input::placeholder { color: var(--rf-mute); }
 
 /* header */
