@@ -32,9 +32,13 @@ Conventions
   Widget internals (validation, submission, streams) stay Orderly's. Mobile layout untouched.
 - `app/components/orderlyProvider/index.tsx`: `plugins={[throneLayoutPlugin]}` on
   `OrderlyAppProvider` (one line, marked `// THRONE:`).
-- `package.json`: added direct deps already present in the lockfile as transitive deps
-  (`@orderly.network/plugin-core`, `ui-order-entry`, `ui-tradingview`, `ui-positions`,
-  `ui-orders`) so the plugin can import them explicitly. Same version 3.2.1, lockfile unchanged.
+- `package.json` untouched. The plugin imports `@orderly.network/plugin-core`, `ui-order-entry`
+  and `ui-tradingview`, which are transitive deps of `@orderly.network/trading` (same 3.2.1,
+  hoisted by yarn). If a future SDK bump stops hoisting them, add them to `dependencies` at the
+  same version and refresh `yarn.lock`.
+- Known follow-ups: market-list tab labels truncate at 236px (widen or drop the OI column);
+  data-list height is fixed at 272px (make it a drag handle later); sword-shaped fill markers on
+  the chart need a TradingView execution-shape override (Tier 3).
 
 ### 2026-09-19 · earlier today (Tier 1, CSS/config only)
 
