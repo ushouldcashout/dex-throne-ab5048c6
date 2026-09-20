@@ -191,6 +191,10 @@
 @media (max-width: 900px) {
   .tb { padding-bottom: 72px; }
   .tb-strip, .tb-section, .tb-hero, .tb-split, .tb-foot, .tb-center, .tb-skel, .tb-error { padding-left: 14px; padding-right: 14px; }
+  .tb-strip { height: 40px; gap: 8px; }
+  .tb-strip .title { font-size: 13px; white-space: nowrap; }
+  .tb-strip .fee { display: none; }
+  .tb-strip .addr { font-size: 10px; white-space: nowrap; }
   .tb-hero { flex-direction: column; gap: 18px; padding-top: 18px; }
   .tb-hero .left { padding-right: 0; border-right: 0; min-width: 0; }
   .tb-hero .bigcode { font-size: 40px; }
