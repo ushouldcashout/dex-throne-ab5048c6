@@ -18,6 +18,8 @@ import { createSymbolDataAdapter } from "@/utils/symbol-filter";
 import { resolveDexThemeConfig } from "@/utils/theme-config";
 import ServiceDisclaimerDialog from "./ServiceDisclaimerDialog";
 import { OrderlyLocaleProvider } from "./orderlyLocaleProvider";
+// THRONE: desktop layout plugin (see app/throne/plugins/throneLayout.tsx)
+import { throneLayoutPlugin } from "@/throne/plugins/throneLayout";
 
 const getNetworkId = (): NetworkId => {
   const env = normalizeDeploymentEnv(getRuntimeConfig("VITE_DEPLOYMENT_ENV"));
@@ -172,6 +174,8 @@ const OrderlyProvider = (props: { children: ReactNode }) => {
       {...(chainFilter && ({ chainFilter } as any))}
       defaultChain={defaultChain}
       dataAdapter={dataAdapter}
+      // THRONE: our own desktop grid via Trading.Layout.Desktop interceptor
+      plugins={[throneLayoutPlugin]}
       restrictedInfo={{
         customRestrictedRegions: getRuntimeConfigArray(
           "VITE_RESTRICTED_REGIONS",
