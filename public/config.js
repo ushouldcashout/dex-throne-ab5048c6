@@ -19,7 +19,7 @@ window.__RUNTIME_CONFIG__ = {
   "VITE_APP_DESCRIPTION": "the throne desk. stocks and crypto perps, 24/7, on robinhood chain. the fees it earns pay the people who fund the vault.",
   "VITE_HAS_PRIMARY_LOGO": "true",
   "VITE_HAS_SECONDARY_LOGO": "true",
-  "VITE_ENABLED_MENUS": "Trading,Portfolio,Markets,Leaderboard,Banner",
+  "VITE_ENABLED_MENUS": "Trading,Portfolio,Markets,Leaderboard,Referrals",
   "VITE_CUSTOM_MENUS": "Points, https://throne.network/points; The Court, https://throne.network",
   "VITE_ENABLE_SERVICE_DISCLAIMER_DIALOG": "false",
   "VITE_ENABLE_CAMPAIGNS": "false",
