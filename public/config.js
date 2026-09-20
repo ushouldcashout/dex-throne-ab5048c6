@@ -20,7 +20,7 @@ window.__RUNTIME_CONFIG__ = {
   "VITE_HAS_PRIMARY_LOGO": "true",
   "VITE_HAS_SECONDARY_LOGO": "true",
   "VITE_ENABLED_MENUS": "Trading,Portfolio,Markets,Leaderboard,Referrals",
-  "VITE_CUSTOM_MENUS": "Points, https://throne.network/points; The Court, https://throne.network; Docs, https://ushouldcashout.github.io/throne-docs/",
+  "VITE_CUSTOM_MENUS": "Points, https://throne.network/points; The Court, https://throne.network; Docs, https://docs.throne.network",
   "VITE_ENABLE_SERVICE_DISCLAIMER_DIALOG": "false",
   "VITE_ENABLE_CAMPAIGNS": "false",
   "VITE_TELEGRAM_URL": "",
