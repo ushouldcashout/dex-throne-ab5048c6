@@ -17,6 +17,34 @@ Conventions
 
 ## Log
 
+### 2026-09-20 · Referrals v2: self-serve codes, Create Code first
+
+- THRONE runs Orderly's **multilevel** affiliate program (Orderly One → Affiliates; base referral
+  commission 40%, minimum trading volume 0 USDC). So any signed-in trader can create their own code:
+  `POST /v1/referral/multi_level/claim_code { referral_code, referee_rebate_rate }`, rename it with
+  `/v1/referral/edit_referral_code` until a trader binds, and change the default split with
+  `/v1/referral/multi_level/rebate_rate/update`. Nobody has to ask the desk for a code.
+- `ReferralsPage.tsx`: header leads with **Create Code** (gold). **Enter Code** is secondary and
+  only shows for accounts that have not been referred and have not traded yet (`/v1/volume/user/stats`
+  `perp_volume_ltd == 0`), since Orderly binds referrals at sign-up and a bound code is permanent.
+  Enter Code modal is one sentence + input (no fee tables). Create Code modal: pick a name with live
+  availability check (`/v1/public/referral/verify_ref_code`), see default split + per-$100k preview,
+  create. Rename modal while nobody has bound. Split modal uses the multilevel update (legacy
+  `edit_split` kept as fallback).
+- `useReferralData.ts`: headline numbers from `/v1/referral/multi_level/statistics?time_range=
+  all_time|30d`, table from `/v1/referral/multi_level/referee_list`, daily history aggregated from
+  `/v1/referral/referral_history`; legacy `referee_info` / `rebate_summary` remain as fallbacks.
+  Program config from `multi_level/max_rebate_rate`, `multi_level/rebate_info`,
+  `multi_level/volume_prerequisite`.
+- `economics.ts`: Orderly rates are fractions of the builder's **net** (taker − Orderly cut =
+  2.0 bps), not of the whole fee. Discount on taker fee = referee_rate × 2.0 / 4.5 (0.16 → ~7%).
+  Removed the earlier heuristic. `ORDERLY_CUT_BPS = 2.5` must track our Orderly fee tier.
+- `referrals.css`: button/tab resets use `:where()` so component classes win (buttons were being
+  flattened); page is full width.
+- Not verifiable from this wallet until a code exists: the referee_list and referral_history field
+  names are taken from the Orderly affiliate SDK; if a column shows "—" or empty, check the raw
+  response in the network tab and adjust the row mapping in `useReferralData.ts`.
+
 ### 2026-09-20 · Referrals page at /referrals (replaces the "Banner" page from earlier today)
 
 Same data, standard vocabulary. The first version used THRONE words (banner / sworn / tribute)
