@@ -17,6 +17,13 @@ Conventions
 
 ## Log
 
+### 2026-09-20 · nav + markets page polish
+
+- `app/utils/config.tsx`: custom menus (Points, The Court) open in the same tab (`_self`),
+  not a new one.
+- `app/styles/index.css`: hide the stats strip at the top of /markets (24h volume, OI, TVL with
+  the Orderly mark). Those are Orderly-network-wide numbers, not THRONE's.
+
 ### 2026-09-20 · layout v0.2: no markets sidebar (Hyperliquid style)
 
 - `app/throne/plugins/throneLayout.tsx` + `throne-layout.css`: dropped the persistent left
