@@ -99,7 +99,9 @@ const getCustomMenuItems = (): MainNavItem[] => {
       validCustomMenus.push({
         name,
         href,
-        target: "_blank",
+        // THRONE: Points and The Court live on throne.network but are part of the same
+        // product; open them in the same tab like every other nav item.
+        target: "_self",
       });
     }
 
