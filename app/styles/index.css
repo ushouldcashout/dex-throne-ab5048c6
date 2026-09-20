@@ -167,3 +167,9 @@ button.oui-button {
 .oui-scaffold-footer * {
   font-size: 11px !important;
 }
+
+/* markets page: hide the network-wide stats strip (24h volume / OI / TVL with the Orderly mark).
+   Those numbers are Orderly-wide, not THRONE's, so they mislead either way. */
+.oui-tabs-content > .oui-overflow-hidden.oui-mt-2 > .oui-box.oui-py-3.oui-rounded-xl:first-child {
+  display: none !important;
+}
