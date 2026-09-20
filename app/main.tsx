@@ -1,7 +1,7 @@
 import React, { lazy } from "react";
 import ReactDOM from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import App from "./App";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { initializeAnalyticsFromRuntimeConfig } from "./utils/analytics";
@@ -34,9 +34,9 @@ const SwapLayout = lazy(() => import("./pages/swap/Layout"));
 const SwapIndex = lazy(() => import("./pages/swap/Index"));
 const PointsLayout = lazy(() => import("./pages/points/Layout"));
 const PointsIndex = lazy(() => import("./pages/points/Index"));
-// THRONE: banner (referral) page
-const BannerLayout = lazy(() => import("./pages/banner/Layout"));
-const BannerIndex = lazy(() => import("./pages/banner/Index"));
+// THRONE: referrals page
+const ReferralsLayout = lazy(() => import("./pages/referrals/Layout"));
+const ReferralsIndex = lazy(() => import("./pages/referrals/Index"));
 
 async function loadRuntimeConfig() {
   return new Promise<void>((resolve) => {
@@ -121,11 +121,13 @@ const router = createBrowserRouter(
           children: [{ index: true, element: <PointsIndex /> }],
         },
         {
-          // THRONE: banner (referral) page
-          path: "banner",
-          element: <BannerLayout />,
-          children: [{ index: true, element: <BannerIndex /> }],
+          // THRONE: referrals page
+          path: "referrals",
+          element: <ReferralsLayout />,
+          children: [{ index: true, element: <ReferralsIndex /> }],
         },
+        // THRONE: old path from the first version of the page
+        { path: "banner", element: <Navigate to="/referrals" replace /> },
       ],
     },
   ],
