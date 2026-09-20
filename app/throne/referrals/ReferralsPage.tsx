@@ -33,6 +33,8 @@ const DESK_URL = "https://trade.throne.network";
 // can become the ?ref= desk link.
 const SHARE_URL = "https://throne.network";
 const X_URL = "https://x.com/thronedefi";
+// Public docs. Swap to https://docs.throne.network once the DNS record exists.
+const DOCS_URL = "https://ushouldcashout.github.io/throne-docs/referrals.html";
 
 function copy(text: string, what = "Copied") {
   navigator.clipboard?.writeText(text).then(
@@ -62,7 +64,7 @@ export default function ReferralsPage() {
           <h1>Referrals</h1>
           <div className="sub">
             Refer traders to the desk and earn {pct(d.commissionRate)} of the fee revenue on every trade they make. Paid daily.
-            <a href={X_URL} target="_blank" rel="noreferrer">Learn more</a>
+            <a href={DOCS_URL} target="_blank" rel="noreferrer">Learn more</a>
           </div>
         </div>
         <div className="rf-actions">
