@@ -53,9 +53,6 @@ export default function BannerPage() {
       <Body d={d} onEditSplit={() => setSplitOpen(true)} />
       {splitOpen && d.code && <SplitModal d={d} onClose={() => setSplitOpen(false)} />}
       <div className="tb-foot">
-        <span>
-          in the seat · <a href={X_URL} target="_blank" rel="noreferrer">join us on twitter</a>
-        </span>
         <span>tribute settles daily at 00:00 utc, straight to your desk balance. no cap, no expiry.</span>
       </div>
     </div>

@@ -56,11 +56,13 @@ export function useBannerData() {
   const ready = state.status >= AccountStatusEnum.EnableTrading;
   const connected = state.status >= AccountStatusEnum.Connected;
 
-  // account-level taker fee (futures_taker_fee_rate is in 0.1 bps units: 45 → 4.5 bps)
+  // account-level taker fee. futures_taker_fee_rate is already in bps (4.5 → 0.045%;
+  // Orderly's own fee page multiplies it by 0.01 to show a percent)
   const { data: accountInfo } = useAccountInfo();
-  const takerBps = accountInfo?.futures_taker_fee_rate
-    ? accountInfo.futures_taker_fee_rate / 10
-    : TAKER_FEE_BPS_DEFAULT;
+  const takerBps =
+    typeof accountInfo?.futures_taker_fee_rate === "number" && accountInfo.futures_taker_fee_rate > 0
+      ? accountInfo.futures_taker_fee_rate
+      : TAKER_FEE_BPS_DEFAULT;
 
   // banner + sworn summary
   const {
