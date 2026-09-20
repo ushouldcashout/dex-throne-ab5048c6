@@ -310,6 +310,9 @@ export const useOrderlyConfig = () => {
       },
 
       { id: "Rewards", href: "/rewards", name: t("tradingRewards.rewards") },
+      // THRONE: our referral page ("banner"), replaces the Rewards/Affiliate tab. Enable via
+      // VITE_ENABLED_MENUS=…,Banner in public/config.js.
+      { id: "Banner", href: "/banner", name: "Banner" },
       { id: "Vaults", href: "/vaults", name: t("common.vaults") },
       {
         id: "Points",
@@ -372,6 +375,23 @@ export const useOrderlyConfig = () => {
       activeIcon: crown("#229959", "#39F194"),
       inactiveIcon: crown("#1a3a28", "#5E6663"),
     });
+
+    // THRONE: banner tab (referral page) in the mobile bottom nav, only when the menu is enabled
+    if (enabledMenus.some((m) => m.id === "Banner")) {
+      const flag = (fill: string, stroke: string) => (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M5 3v18" stroke={stroke} strokeWidth="2" strokeLinecap="round" />
+          <path d="M5 4h11l-2 4 2 4H5z" fill={fill} stroke={stroke} strokeWidth="1.8" strokeLinejoin="round" />
+        </svg>
+      );
+      bottomNavMenus.push({
+        name: "Banner",
+        href: "/banner",
+        target: "_self",
+        activeIcon: flag("#8a6d1f", "#D4AF37"),
+        inactiveIcon: flag("#2a2410", "#5E6663"),
+      });
+    }
 
     const mainNavProps: MainNavWidgetProps = {
       initialMenu: "/",
