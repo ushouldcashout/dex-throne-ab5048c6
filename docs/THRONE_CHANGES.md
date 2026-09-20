@@ -20,11 +20,12 @@ Conventions
 ### 2026-09-20 · Docs
 
 - Public docs live in a separate repo, `ushouldcashout/throne-docs` (GitHub Pages, markdown →
-  static HTML via `build.py`). Until `docs.throne.network` is pointed at GitHub Pages the URL is
-  `https://ushouldcashout.github.io/throne-docs/`.
+  static HTML via `build.py`) at **https://docs.throne.network** (Cloudflare CNAME → GitHub Pages).
 - `app/throne/referrals/ReferralsPage.tsx`: "Learn more" → docs referrals page (`DOCS_URL`).
-- `public/config.js`: `VITE_CUSTOM_MENUS` gains a **Docs** item. Update both URLs when the custom
-  domain is live.
+- `public/config.js`: `VITE_CUSTOM_MENUS` gains a **Docs** item.
+- Hosting, for the record: site `throne.network` and `www` now also on GitHub Pages
+  (`ushouldcashout/throne-site`), replacing Cloudflare Pages. Cloudflare keeps DNS (proxied) and
+  the passphrase Worker on `trade.` only. Every property is now commit = deploy.
 
 ### 2026-09-20 · Referrals v2.1: commission-only model (no trader discount)
 
