@@ -133,16 +133,17 @@ export function useReferralData() {
     { revalidateOnFocus: false, shouldRetryOnError: false },
   );
   const isMultilevel = !!maxRate;
-  // the total commission this account can allocate (fraction of THRONE net), e.g. 0.4
-  const assignedRate =
-    maxRate?.bonus_max_rebate_rate ?? maxRate?.max_rebate_rate ?? code?.max_rebate_rate ?? COMMISSION_SHARE_DEFAULT;
-  // what a referred trader gets back (fraction of net), e.g. 0.16
-  const refereeRate =
-    rebateInfo?.default_bonus_referee_rebate_rate ??
-    rebateInfo?.default_referee_rebate_rate ??
-    code?.referee_rebate_rate ??
-    assignedRate * 0.4;
-  const referrerRate = Math.max(0, (code ? code.referrer_rebate_rate + code.referee_rebate_rate : assignedRate) - refereeRate);
+  // Multilevel: an L1 affiliate's total rate = base (minimum pass-down) + bonus. Orderly One's
+  // "Base referral commission 40%" is the base; bonus is 0 unless the desk grants a KOL more.
+  // The whole rate is earned by the referrer on direct referrals; traders get no discount.
+  const mlRate =
+    (maxRate?.bonus_max_rebate_rate ?? maxRate?.max_rebate_rate ?? 0) + (maxRate?.base_rebate_rate ?? 0);
+  const legacyRate = code ? code.referrer_rebate_rate + code.referee_rebate_rate : 0;
+  const commissionRate = (isMultilevel ? mlRate : legacyRate) || COMMISSION_SHARE_DEFAULT;
+  // legacy program only: part of the code's rate handed to the trader as a discount
+  const refereeRate = isMultilevel ? 0 : code?.referee_rebate_rate ?? 0;
+  const referrerRate = commissionRate - refereeRate;
+  const debug = { maxRate, rebateInfo, prereq, info };
   const canCreate =
     ready && !hasCode && (!prereq || (prereq.current_volume ?? 0) >= (prereq.required_volume ?? 0));
 
@@ -282,7 +283,6 @@ export function useReferralData() {
   const [claimCode, { isMutating: claimMutating }] = useMutation("/v1/referral/multi_level/claim_code", "POST");
   const [renameCode, { isMutating: renameMutating }] = useMutation("/v1/referral/edit_referral_code", "POST");
   const [updateRate, { isMutating: rateMutating }] = useMutation("/v1/referral/multi_level/rebate_rate/update", "POST");
-  const [editSplitLegacy, { isMutating: legacySplitMutating }] = useMutation("/v1/referral/edit_split", "POST");
   const [bindCode, { isMutating: bindMutating }] = useMutation("/v1/referral/bind", "POST");
 
   const refreshAll = async () => {
@@ -317,9 +317,10 @@ export function useReferralData() {
     canCreate,
     prereq,
     isMultilevel,
-    assignedRate,
+    commissionRate,
     refereeRate,
     referrerRate,
+    debug,
     // headline
     totals,
     // table
@@ -355,8 +356,7 @@ export function useReferralData() {
     renameCode,
     renameMutating,
     updateRate,
-    editSplitLegacy,
-    splitMutating: rateMutating || legacySplitMutating,
+    rateMutating,
     bindCode,
     bindMutating,
     refreshAll,

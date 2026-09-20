@@ -159,6 +159,9 @@
 .rf-modal .actions { display: flex; gap: 10px; justify-content: flex-end; }
 .rf-modal .actions .rf-btn { height: 38px; }
 
+/* debug (?debug=1) */
+.rf-debug { margin-top: 16px; padding: 12px; border: 1px dashed var(--rf-line-2); border-radius: 4px; font-family: var(--rf-mono); font-size: 11px; color: var(--rf-dim); white-space: pre-wrap; word-break: break-all; }
+
 /* skeleton */
 .rf-skel { background: rgba(255, 255, 255, 0.05); border-radius: 3px; display: inline-block; height: 1em; width: 5ch; vertical-align: middle; }
 

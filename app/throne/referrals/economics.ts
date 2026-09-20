@@ -9,10 +9,11 @@
  *   THRONE net           2.0 bps   = taker − Orderly cut
  *   referral commission  40% of THRONE net (Orderly One → Affiliates → "Base referral commission")
  *
- * How Orderly stores rates (docs: Affiliate & Referral Program): every rate is a fraction of the
- * builder's NET profit, not of the whole fee. A code with 40% commission split 60/40 is stored as
- * referrer_rebate_rate 0.24 and referee_rebate_rate 0.16. So a trader's discount on the taker fee
- * is 0.16 × 2.0 / 4.5 ≈ 7%, and the referrer earns 0.24 × 2.0 bps = 0.48 bps of referred volume.
+ * Program model (Orderly multilevel affiliate program, the one available to new brokers): rates
+ * are fractions of the builder's NET profit, and the whole commission goes to the referrer chain.
+ * The referred trader gets no fee discount ("the trader does not earn affiliate commission from
+ * their own trade"). With 40% base commission an affiliate earns 0.4 × 2.0 bps = 0.8 bps of their
+ * referrals' taker volume, about $8 per $100k.
  *
  * If the fee or the commission share changes in Orderly One, change it here too.
  */
