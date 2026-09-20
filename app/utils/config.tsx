@@ -310,9 +310,9 @@ export const useOrderlyConfig = () => {
       },
 
       { id: "Rewards", href: "/rewards", name: t("tradingRewards.rewards") },
-      // THRONE: our referral page ("banner"), replaces the Rewards/Affiliate tab. Enable via
-      // VITE_ENABLED_MENUS=…,Banner in public/config.js.
-      { id: "Banner", href: "/banner", name: "Banner" },
+      // THRONE: our referral page, replaces the Rewards/Affiliate tab. Enable via
+      // VITE_ENABLED_MENUS=…,Referrals in public/config.js.
+      { id: "Referrals", href: "/referrals", name: "Referrals" },
       { id: "Vaults", href: "/vaults", name: t("common.vaults") },
       {
         id: "Points",
@@ -376,8 +376,8 @@ export const useOrderlyConfig = () => {
       inactiveIcon: crown("#1a3a28", "#5E6663"),
     });
 
-    // THRONE: banner tab (referral page) in the mobile bottom nav, only when the menu is enabled
-    if (enabledMenus.some((m) => m.id === "Banner")) {
+    // THRONE: referrals tab in the mobile bottom nav, only when the menu is enabled
+    if (enabledMenus.some((m) => m.id === "Referrals")) {
       const flag = (fill: string, stroke: string) => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <path d="M5 3v18" stroke={stroke} strokeWidth="2" strokeLinecap="round" />
@@ -385,8 +385,8 @@ export const useOrderlyConfig = () => {
         </svg>
       );
       bottomNavMenus.push({
-        name: "Banner",
-        href: "/banner",
+        name: "Referrals",
+        href: "/referrals",
         target: "_self",
         activeIcon: flag("#8a6d1f", "#D4AF37"),
         inactiveIcon: flag("#2a2410", "#5E6663"),
