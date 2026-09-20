@@ -17,6 +17,14 @@ Conventions
 
 ## Log
 
+### 2026-09-20 · layout v0.2: no markets sidebar (Hyperliquid style)
+
+- `app/throne/plugins/throneLayout.tsx` + `throne-layout.css`: dropped the persistent left
+  markets column. The symbol in the symbol bar already opens Orderly's markets popout
+  (`DropDownMarketsWidget`, 620×496, search + tabs + favourites), same pattern as Hyperliquid
+  and Lighter. Chart now spans the full width; grid is 3 columns (chart | orderbook | entry).
+  Popout rows tightened to 30px. Min desk width 1100px.
+
 ### 2026-09-19 · Phase 0 + Tier 2 layout
 
 - `.github/workflows/deploy.yml`: removed "Check if fork" and "Sync with upstream" steps.
@@ -36,8 +44,7 @@ Conventions
   and `ui-tradingview`, which are transitive deps of `@orderly.network/trading` (same 3.2.1,
   hoisted by yarn). If a future SDK bump stops hoisting them, add them to `dependencies` at the
   same version and refresh `yarn.lock`.
-- Known follow-ups: market-list tab labels truncate at 236px (widen or drop the OI column);
-  data-list height is fixed at 272px (make it a drag handle later); sword-shaped fill markers on
+- Known follow-ups: data-list height is fixed at 272px (make it a drag handle later); sword-shaped fill markers on
   the chart need a TradingView execution-shape override (Tier 3).
 
 ### 2026-09-19 · earlier today (Tier 1, CSS/config only)
