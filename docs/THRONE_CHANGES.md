@@ -17,46 +17,40 @@ Conventions
 
 ## Log
 
-### 2026-09-20 · Banner page (our referral page) at /banner
+### 2026-09-20 · Referrals page at /referrals (replaces the "Banner" page from earlier today)
 
-Vocabulary on this page: referral code = **banner**, referrer = **banner holder**, referee has
-**sworn to a banner**, rebate = **tribute**. The words referral/referee/affiliate only appear in
-the small print. Design: Claude Design handoff `design_handoff_throne/banner` v5.
+Same data, standard vocabulary. The first version used THRONE words (banner / sworn / tribute)
+and was confusing for perp traders who already know the Hyperliquid-style referrals page. This one
+follows that structure and language 1:1 (Referrals · Traders Referred · Rewards Earned · Enter
+Code · Create Code · Address / Date Joined / Total Volume / Fees Paid / Your Rewards) with the
+THRONE skin (near-black, hairlines, gold, mono numbers) and one extra: a Rewards History tab with a
+daily rewards chart and a paid/pending ledger.
 
-- `app/throne/banner/BannerPage.tsx` (new): the page. States: connect → sign in → loading →
-  error → holder (hero with code, copy link, share on X, sworn traders / their volume (all|30d) /
-  tribute earned / unpaid tribute; split bar with edit-split modal; tribute-over-time chart 30d|90d
-  with volume line; sworn traders table with server-side sort + 25/page paging + address search;
-  collapsible payout ledger) · sworn-only card (discount %, saved so far, effective taker fee) ·
-  claim/join (raise a banner: auto-referral progress if the desk enabled it in Orderly One,
-  otherwise "ask the desk" → @thronedefi; swear to a banner: live code check + bind).
-  A wallet that is both holder and sworn sees the holder view plus a sworn strip.
-- `app/throne/banner/useBannerData.ts` (new): all data from `@orderly.network/hooks` 3.2.1, no
-  THRONE backend. `/v1/referral/info` (codes, totals, 30d fields, referee side),
-  `useRefereeInfo` (sworn traders: address, bound time, volume, fee, rebate),
-  `useReferralRebateSummary` (daily volume/tribute for chart + ledger; rows dated before today
-  UTC are "settled", today is "pending" = unpaid tribute), `useRefereeRebateSummary` (actual
-  discount received), `useAccountInfo` (taker fee; `futures_taker_fee_rate / 10` = bps),
-  `/v1/referral/auto_referral/progress`, mutations `/v1/referral/edit_split` and `/v1/referral/bind`.
-  Orderly's `?ref=CODE` handling is untouched: react-app stores it, ui-connector binds it at
-  account creation, so `trade.throne.network/?ref=RAFI` works with no code here.
-- `app/throne/banner/economics.ts` (new): preview constants. Taker 4.5 bps, tribute pool 0.8 bps
-  (40% of THRONE's 2 bps). Drives only the per-$100k previews and the effective-fee readout;
-  Orderly computes the real rebates. **If fees or the commission share change in Orderly One,
-  change this file.** Referee discount prefers actuals (Σ referee_rebate / Σ fee) over rates.
-- `app/throne/banner/format.ts`, `banner.css` (new): lowercase THRONE voice, mono numbers,
-  hairlines, gold/green tokens; responsive (table rows become cards under 900px).
-- `app/pages/banner/Layout.tsx`, `Index.tsx` (new): Scaffold shell + SEO title, same pattern as
-  Points/Leaderboard.
-- `app/main.tsx`: `/banner` route (lazy). `app/utils/config.tsx`: `Banner` menu item (id
-  `Banner`, href `/banner`) and a flag tab in the mobile bottom nav when enabled.
-  `public/config.js`: `VITE_ENABLED_MENUS` now `Trading,Portfolio,Markets,Leaderboard,Banner`.
-  The stock `/rewards/affiliate` route still exists but is not in the nav.
-- Not done yet (follow-ups): top-10 crown glyph per trader (needs the public broker leaderboard
-  endpoint), trades count / last trade per trader (not in Orderly's referee API), per-row 30d
-  volume (same), tx links in the ledger (rebates are internal balance credits, no on-chain tx).
-- Operator side (Orderly One → Growth → Affiliates): program enabled, default split 60/40.
-  KOL banners are created there (e.g. `RAFI`); they show up on this page for that wallet.
+- `app/throne/referrals/ReferralsPage.tsx` (new): header with Enter Code (or "Referred by CODE"
+  once bound) and Create Code (or Copy Referral Link once you have a code); three cards (Traders
+  Referred, Rewards Earned, Pending Rewards); "Your code" strip (code, copy, link, share on X,
+  split, Edit split) or "Referred by" strip (discount, effective fee, saved so far); tabs
+  Referrals (sortable table, address search, 25/page, totals row) and Rewards History (30D/90D
+  chart + daily ledger, Paid/Pending). Modals: Enter Referral Code (live check + bind), Create
+  Referral Code (auto-referral progress if enabled in Orderly One, otherwise "request a code"
+  → @thronedefi), Edit Split (keeps the code's total rebate, moves the line).
+  No "Claim Rewards" button on purpose: Orderly pays rebates to the balance daily, nothing to claim.
+- `app/throne/referrals/useReferralData.ts`, `economics.ts`, `format.ts`, `referrals.css` (new):
+  the data layer and constants from the Banner version, renamed to standard terms.
+  `economics.ts` constants (taker 4.5 bps, reward pool 0.8 bps = 40% of THRONE's 2 bps) drive only
+  the previews; **if fees or the commission share change in Orderly One, change them here.**
+  `futures_taker_fee_rate` from `/v1/client/info` is already in bps.
+- `app/pages/referrals/Layout.tsx`, `Index.tsx` (new): Scaffold shell + SEO title.
+- `app/main.tsx`: `/referrals` route; `/banner` redirects to it. `app/utils/config.tsx`: menu
+  item id `Referrals` + mobile flag tab. `public/config.js`: `VITE_ENABLED_MENUS` lists
+  `Referrals`. `app/throne/banner/` and `app/pages/banner/` deleted.
+- Data sources unchanged: `/v1/referral/info`, `useRefereeInfo`, `useReferralRebateSummary`,
+  `useRefereeRebateSummary`, `useAccountInfo`, `/v1/referral/auto_referral/progress`, mutations
+  `/v1/referral/edit_split`, `/v1/referral/bind`. Orderly handles `?ref=CODE` (react-app stores,
+  ui-connector binds at account creation), so `trade.throne.network/?ref=RAFI` needs no code here.
+- Follow-ups: per-trader trade count / last trade (not in Orderly's referee API), top-10 marker.
+- Operator side (Orderly One → Growth → Affiliates): program enabled, default split 60/40; KOL
+  codes are created there and show up on this page for that wallet.
 
 ### 2026-09-20 · nav + markets page polish
 
