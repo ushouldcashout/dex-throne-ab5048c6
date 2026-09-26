@@ -14,7 +14,7 @@ window.__RUNTIME_CONFIG__ = {
   "VITE_ENABLE_ABSTRACT_WALLET": "false",
   "VITE_DISABLE_EVM_WALLETS": "false",
   "VITE_DISABLE_SOLANA_WALLETS": "false",
-  "VITE_WALLETCONNECT_PROJECT_ID": "",
+  "VITE_WALLETCONNECT_PROJECT_ID": "feceb112e64afbf460c241f1e10c20f2",
   "VITE_APP_NAME": "throne",
   "VITE_APP_DESCRIPTION": "the throne desk. stocks and crypto perps, 24/7, on robinhood chain. the fees it earns pay the people who fund the vault.",
   "VITE_HAS_PRIMARY_LOGO": "true",
