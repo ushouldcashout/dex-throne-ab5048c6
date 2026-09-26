@@ -1,5 +1,5 @@
 let CACHE_NAME = 'orderly-dex-v1';
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3'; // v3: purge caches poisoned by the staging gate (HTML cached as JS modules), 25 Sep 2026
 let cacheNameInitialized = false;
 
 const NEVER_CACHE = ['/', '/index.html', '/config.js'];
@@ -99,10 +99,16 @@ self.addEventListener('fetch', (event) => {
       if (isHashedModule) {
         return caches.match(request).then((cachedResponse) => {
           if (cachedResponse) {
-            return cachedResponse;
+            const cct = cachedResponse.headers.get('content-type') || '';
+            if (/javascript|ecmascript/i.test(cct)) {
+              return cachedResponse;
+            }
+            caches.open(CACHE_NAME).then((cache) => cache.delete(request)).catch(() => {});
           }
           return fetch(request).then((response) => {
-            if (response && response.status === 200 && response.type === 'basic') {
+            const ct = (response && response.headers.get('content-type')) || '';
+            const looksLikeJs = /javascript|ecmascript/i.test(ct);
+            if (response && response.status === 200 && response.type === 'basic' && looksLikeJs) {
               const responseToCache = response.clone();
               caches.open(CACHE_NAME).then((cache) => {
                 cache.put(request, responseToCache).catch((err) => {
