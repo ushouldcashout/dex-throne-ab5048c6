@@ -29,9 +29,6 @@ import { dateFromYmd, dateTimeUtc, dayMonth, pct, shortAddr, usd, usd0 } from ".
 import "./referrals.css";
 
 const DESK_URL = "https://trade.throne.network";
-// Public share copy links to throne.network while the desk is gated. After the Sep 25 open this
-// can become the ?ref= desk link.
-const SHARE_URL = "https://throne.network";
 const X_URL = "https://x.com/thronedefi";
 // Public docs.
 const DOCS_URL = "https://docs.throne.network/referrals.html";
@@ -147,7 +144,7 @@ function Card({ label, value, note, gold, loading }: { label: string; value: str
 function CodeStrip({ d, onRename }: { d: ReferralData; onRename: () => void }) {
   const code = d.code!;
   const link = `${DESK_URL}/?ref=${code.code}`;
-  const tweet = `I trade stocks and crypto perps on the THRONE desk. Sign up with my referral code ${code.code}. ${SHARE_URL}`;
+  const tweet = `I trade stocks and crypto perps on the throne. desk. Trade with my referral code ${code.code} and we both earn on every trade.\n\n${link}`;
   const renamable = d.totals.invites === 0;
   return (
     <div className="rf-strip">
