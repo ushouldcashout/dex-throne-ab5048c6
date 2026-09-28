@@ -10,5 +10,9 @@
   "extend.tradingLeaderboard.campaigns": "Campaigns",
   "restrictedInfo.description.default": "you are accessing {{brokerName}} from a restricted region.",
   "scaffold.footer.operational": "in the seat",
-  "scaffold.footer.joinCommunity": "join us on twitter"
+  "scaffold.footer.joinCommunity": "join us on twitter",
+  "trading.rwa.marketHours": "US hours · live",
+  "trading.rwa.outsideMarketHours": "24/7 · after hours",
+  "trading.rwa.tooltip.description.close": "US markets are closed but this perp trades 24/7. Liquidity can be thinner and the price can move slower until the open.",
+  "trading.rwa.tooltip.description.open": "US markets are open. Liquidity and price movement track the underlying."
 }
