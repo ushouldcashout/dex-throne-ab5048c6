@@ -10,7 +10,7 @@
  * Nothing here touches trading. If the API is down the chip renders the static pot line and the
  * gate stays closed.
  */
-import { useCallback, useEffect, useState, type MouseEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
 import { useAccount } from "@orderly.network/hooks";
 import { AccountStatusEnum } from "@orderly.network/types";
 import "./kingdrop.css";
