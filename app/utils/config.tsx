@@ -418,7 +418,7 @@ export const useOrderlyConfig = () => {
 
     mainNavProps.customRender = (components) => {
       return (
-        <Flex justify="between" className="oui-w-full">
+        <Flex justify="between" className="oui-w-full oui-relative">
           <Flex
             itemAlign={"center"}
             className={cn("oui-gap-3", "oui-overflow-hidden")}
@@ -444,9 +444,11 @@ export const useOrderlyConfig = () => {
             {components.mainNav}
           </Flex>
 
+          {/* THRONE: King Drop pot + your side, centred in the header (desktop) */}
+          {!isMobile && <KingDropChip />}
+
           <Flex itemAlign={"center"} className="oui-gap-2">
-            {/* THRONE: King Drop pot + your side (desktop chip), one-time pick-your-side gate */}
-            {!isMobile && <KingDropChip />}
+            {/* THRONE: one-time pick-your-side gate */}
             <KingDropGate />
             {/* THRONE: single chain (Robinhood), no chain menu / QR / device link */}
             {components.languageSwitcher}
