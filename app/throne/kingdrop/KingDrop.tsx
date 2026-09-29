@@ -275,7 +275,7 @@ export function KingDropGate() {
               </button>
             </div>
             <div className="kd-gate-note">
-              one free signature, no transaction. switch once per season; sides lock for the final 48 hours of each week. $THRONE holders score up to 1.5x.
+              one free signature, no transaction. switch once per season, and only in the first 48 hours of a week. $THRONE holders score up to 1.5x.
             </div>
             {err && <div className="kd-gate-err">{err}</div>}
           </>
