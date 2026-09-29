@@ -10,8 +10,12 @@
   --kd-mute: rgba(233, 236, 233, 0.4);
 }
 
-/* chip */
+/* chip: centred in the header, absolutely positioned so left nav and right wallet controls don't shift it */
 .kd-chip {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -34,6 +38,8 @@
 .kd-chip-me { color: var(--kd-dim); font-variant-numeric: tabular-nums; }
 .kd-chip-me.kd-white { color: #f4f4f0; }
 .kd-chip-me.kd-black { color: var(--kd-gold); }
+
+@media (max-width: 1360px) { .kd-chip { display: none; } } /* not enough room between nav and wallet controls */
 
 /* gate */
 .kd-gate-backdrop {
