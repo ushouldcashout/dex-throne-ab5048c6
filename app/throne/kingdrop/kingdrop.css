@@ -1,0 +1,113 @@
+/* THRONE · King Drop chip + gate (desk header) */
+:root {
+  --kd-green: #39f194;
+  --kd-gold: #e8c76a;
+  --kd-bg: #0b0d0c;
+  --kd-panel: #111413;
+  --kd-line: rgba(255, 255, 255, 0.08);
+  --kd-text: #e9ece9;
+  --kd-dim: rgba(233, 236, 233, 0.62);
+  --kd-mute: rgba(233, 236, 233, 0.4);
+}
+
+/* chip */
+.kd-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--kd-line);
+  border-radius: 999px;
+  background: rgba(57, 241, 148, 0.06);
+  color: var(--kd-text);
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+.kd-chip:hover { border-color: rgba(57, 241, 148, 0.45); background: rgba(57, 241, 148, 0.1); color: var(--kd-text); }
+.kd-chip-pot { color: var(--kd-green); font-weight: 600; font-variant-numeric: tabular-nums; }
+.kd-chip-label { color: var(--kd-dim); }
+.kd-chip-sep { color: var(--kd-mute); }
+.kd-chip-me { color: var(--kd-dim); font-variant-numeric: tabular-nums; }
+.kd-chip-me.kd-white { color: #f4f4f0; }
+.kd-chip-me.kd-black { color: var(--kd-gold); }
+
+/* gate */
+.kd-gate-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.kd-gate {
+  width: 100%;
+  max-width: 440px;
+  background: var(--kd-panel);
+  border: 1px solid var(--kd-line);
+  border-radius: 14px;
+  padding: 22px 22px 18px;
+  color: var(--kd-text);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  font-size: 13px;
+}
+.kd-gate-kicker { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--kd-mute); }
+.kd-gate-pot { margin-top: 8px; font-size: 30px; font-weight: 700; color: var(--kd-green); letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.kd-gate-sub { margin-top: 4px; color: var(--kd-dim); }
+.kd-gate-title { margin-top: 18px; font-size: 15px; font-weight: 600; }
+.kd-gate-row { display: flex; gap: 10px; margin-top: 10px; }
+.kd-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--kd-line);
+  background: var(--kd-bg);
+  color: var(--kd-text);
+  cursor: pointer;
+  font: inherit;
+  transition: border-color 0.15s, transform 0.1s;
+}
+.kd-side:hover:not(:disabled) { border-color: rgba(57, 241, 148, 0.5); transform: translateY(-1px); }
+.kd-side:disabled { opacity: 0.45; cursor: not-allowed; }
+.kd-side-glyph { font-size: 30px; line-height: 1; }
+.kd-side.kd-white .kd-side-glyph { color: #f4f4f0; }
+.kd-side.kd-black .kd-side-glyph { color: var(--kd-gold); }
+.kd-side-name { font-weight: 600; text-transform: lowercase; }
+.kd-side-meta { font-size: 11px; color: var(--kd-mute); font-variant-numeric: tabular-nums; }
+.kd-side-busy { font-size: 11px; color: var(--kd-green); }
+.kd-gate-foot { margin-top: 12px; display: flex; align-items: center; gap: 8px; color: var(--kd-mute); }
+.kd-link { background: none; border: 0; padding: 0; font: inherit; color: var(--kd-dim); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.kd-link:hover { color: var(--kd-green); }
+.kd-link:disabled { opacity: 0.5; cursor: default; }
+.kd-gate-note { margin-top: 14px; font-size: 11px; color: var(--kd-mute); line-height: 1.5; }
+.kd-gate-err { margin-top: 10px; font-size: 12px; color: #ff6b6b; }
+.kd-gate-done { margin-top: 16px; font-size: 16px; font-weight: 600; }
+.kd-gate-done.kd-white { color: #f4f4f0; }
+.kd-gate-done.kd-black { color: var(--kd-gold); }
+.kd-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  border-radius: 9px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+.kd-btn-solid { background: var(--kd-green); color: #062012; border: 0; }
+.kd-btn-solid:hover { filter: brightness(1.08); }
+.kd-btn-ghost { background: transparent; color: var(--kd-text); border: 1px solid var(--kd-line); }
+.kd-btn-ghost:hover { border-color: rgba(57, 241, 148, 0.5); color: var(--kd-text); }
