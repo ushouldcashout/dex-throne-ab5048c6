@@ -25,6 +25,7 @@ import {
 import { CampaignsNavTitle } from "@/components/CampaignsNavTitle";
 import CustomLeftNav from "@/components/CustomLeftNav";
 import { ThroneSounds } from "@/components/ThroneSounds";
+import { KingDropChip, KingDropGate } from "@/throne/kingdrop/KingDrop";
 import { OrderlyActiveIcon, OrderlyIcon } from "../components/icons/orderly";
 import { withBasePath } from "./base-path";
 import {
@@ -444,6 +445,9 @@ export const useOrderlyConfig = () => {
           </Flex>
 
           <Flex itemAlign={"center"} className="oui-gap-2">
+            {/* THRONE: King Drop pot + your side (desktop chip), one-time pick-your-side gate */}
+            {!isMobile && <KingDropChip />}
+            <KingDropGate />
             {/* THRONE: single chain (Robinhood), no chain menu / QR / device link */}
             {components.languageSwitcher}
             {components.subAccount}
