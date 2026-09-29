@@ -128,30 +128,51 @@ export function KingDropChip() {
   const pot = board?.pot ?? POT_FALLBACK;
   const pre = board?.preseason ?? true;
   const sideName = me?.side || side?.side;
-  const title = pre ? "pre-season, from now to oct 18" : `week ${board?.week ?? 1}`;
+  const title = pre ? "pre-season · to oct 18" : `week ${board?.week ?? 1}`;
+
+  // The chip lives in the free space between the nav and the wallet controls. Measure that space and shrink the
+  // chip in steps instead of letting it overlap the nav: full > compact (pot + side) > pot only > hidden.
+  const slotRef = useRef<HTMLDivElement>(null);
+  const [slotW, setSlotW] = useState<number>(9999);
+  useEffect(() => {
+    const el = slotRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver((entries) => setSlotW(entries[0]?.contentRect.width ?? 9999));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const level = slotW >= 420 ? 3 : slotW >= 260 ? 2 : slotW >= 150 ? 1 : 0;
+
+  const mine = addr && sideName ? (
+    <span className={`kd-chip-me kd-${sideName}`}>
+      {sideName}
+      {me && me.rank ? ` #${me.rank}` : ""}
+      {level >= 3 ? (me && me.season > 0 ? ` · ${fmt(me.season)} pts` : " · 0 pts") : ""}
+    </span>
+  ) : level >= 3 ? (
+    <span className="kd-chip-me">{title}</span>
+  ) : null;
 
   return (
-    <a
-      className="kd-chip"
-      href={BOARD_URL}
-      target="_blank"
-      rel="noreferrer"
-      title="King Drop · the board"
-    >
-      <span className="kd-chip-pot">{fmt(pot)} $THRONE</span>
-      <span className="kd-chip-sep">·</span>
-      <span className="kd-chip-label">King Drop</span>
-      <span className="kd-chip-sep">·</span>
-      {addr && sideName ? (
-        <span className={`kd-chip-me kd-${sideName}`}>
-          {sideName}
-          {me && me.rank ? ` #${me.rank}` : ""}
-          {me && me.season > 0 ? ` · ${fmt(me.season)} pts` : " · 0 pts"}
-        </span>
-      ) : (
-        <span className="kd-chip-me">{title}</span>
+    <div className="kd-chip-slot" ref={slotRef}>
+      {level > 0 && (
+        <a className="kd-chip" href={BOARD_URL} target="_blank" rel="noreferrer" title="King Drop · the board">
+          <span className="kd-chip-pot">{fmt(pot)} $THRONE</span>
+          {level >= 2 && (
+            <>
+              <span className="kd-chip-sep">·</span>
+              <span className="kd-chip-label">King Drop</span>
+            </>
+          )}
+          {mine && (
+            <>
+              <span className="kd-chip-sep">·</span>
+              {mine}
+            </>
+          )}
+        </a>
       )}
-    </a>
+    </div>
   );
 }
 

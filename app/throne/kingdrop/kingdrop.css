@@ -10,12 +10,18 @@
   --kd-mute: rgba(233, 236, 233, 0.4);
 }
 
-/* chip: centred in the header, absolutely positioned so left nav and right wallet controls don't shift it */
+/* chip: sits in the flex gap between the nav and the wallet controls, centred in that gap. The slot measures itself
+   and the chip drops detail (then hides) when the gap is narrow, so it never overlaps the nav. */
+.kd-chip-slot {
+  flex: 1 1 0px; /* leftover space only; the nav and wallet controls keep their natural width */
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 12px;
+  overflow: hidden;
+}
 .kd-chip {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -39,7 +45,6 @@
 .kd-chip-me.kd-white { color: #f4f4f0; }
 .kd-chip-me.kd-black { color: var(--kd-gold); }
 
-@media (max-width: 1360px) { .kd-chip { display: none; } } /* not enough room between nav and wallet controls */
 
 /* gate */
 .kd-gate-backdrop {
