@@ -55,3 +55,33 @@ div[data-section-name='extendLeftTradingLine'] {
 [data-name="legend-source-exchange"] {
     display: none !important;
 }
+
+/* THRONE: pane divider (between the chart and indicator panes) is a 9px invisible strip by default and hard to grab.
+   Make it a visible, 18px grab bar with a centre pill. Class names are hashed, so match on the stable prefixes. */
+[class*="paneSeparator-"] [class*="handle-"] {
+    height: 18px !important;
+    top: -8px !important;
+    cursor: row-resize !important;
+    background: rgba(57, 241, 148, 0.06) !important;
+}
+[class*="paneSeparator-"] [class*="handle-"]::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 48px;
+    height: 4px;
+    margin: -2px 0 0 -24px;
+    border-radius: 2px;
+    background: rgba(57, 241, 148, 0.45);
+    pointer-events: none;
+}
+[class*="paneSeparator-"] [class*="handle-"]:hover,
+[class*="paneSeparator-"] [class*="handle-"][class*="hovered-"],
+[class*="paneSeparator-"] [class*="handle-"][class*="active-"] {
+    background: rgba(57, 241, 148, 0.16) !important;
+}
+[class*="paneSeparator-"] [class*="handle-"]:hover::after,
+[class*="paneSeparator-"] [class*="handle-"][class*="active-"]::after {
+    background: rgba(57, 241, 148, 0.95);
+}
