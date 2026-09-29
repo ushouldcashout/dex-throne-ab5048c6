@@ -62,6 +62,44 @@
 .throne-datalist { padding: 0 8px !important; }
 .throne-datalist > * { height: 100%; }
 
+/* chart / positions drag handle: a 14px strip straddling the hairline, visible pill in the middle */
+.throne-split {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -7px;
+  height: 14px;
+  z-index: 5;
+  cursor: row-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  user-select: none;
+}
+.throne-split::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 6px; height: 2px;
+  background: rgba(57, 241, 148, 0);
+  transition: background 0.15s;
+}
+.throne-split-pill {
+  width: 56px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(57, 241, 148, 0.35);
+  box-shadow: 0 0 0 4px rgb(var(--oui-color-base-9));
+  transition: background 0.15s, width 0.15s;
+}
+.throne-split:hover::before, .is-resizing .throne-split::before { background: rgba(57, 241, 148, 0.35); }
+.throne-split:hover .throne-split-pill, .is-resizing .throne-split-pill { background: rgba(57, 241, 148, 0.95); width: 72px; }
+.is-resizing { cursor: row-resize; }
+.is-resizing .throne-chart, .is-resizing .throne-datalist > * { pointer-events: none; } /* keep the chart iframe from eating the drag */
+.throne-datalist { overflow: visible; }
+.throne-datalist > *:not(.throne-split) { overflow: hidden; }
+.throne-datalist > .throne-split { height: 14px; }
+
 /* below the grid's min width, let the page scroll horizontally instead of crushing panels */
 .oui-scaffold-content:has(> .throne-desk),
 .oui-scaffold-content:has(.throne-desk) {
