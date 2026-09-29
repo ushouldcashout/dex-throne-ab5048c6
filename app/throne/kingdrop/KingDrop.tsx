@@ -10,7 +10,7 @@
  * Nothing here touches trading. If the API is down the chip renders the static pot line and the
  * gate stays closed.
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type MouseEvent } from "react";
 import { useAccount } from "@orderly.network/hooks";
 import { AccountStatusEnum } from "@orderly.network/types";
 import "./kingdrop.css";
@@ -210,17 +210,27 @@ export function KingDropGate() {
     : null;
   const pot = board?.pot ?? POT_FALLBACK;
   const smaller: Side = counts && counts.black < counts.white ? "black" : "white";
+  const pts = board?.sides ? { white: board.sides.white.pts, black: board.sides.black.pts } : null;
+  const totPts = pts ? pts.white + pts.black : 0;
+  const whiteShare = totPts > 0 && pts ? pts.white / totPts : 0.5;
+  const wallets = (s: Side) => (counts ? counts[s] : 0);
+  const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
 
   return (
     <div className="kd-gate-backdrop" onClick={close}>
       <div className="kd-gate" onClick={(e) => e.stopPropagation()}>
-        <div className="kd-gate-kicker">King Drop · {board?.preseason === false ? `week ${board?.week}` : "pre-season, from now to oct 18"}</div>
-        <div className="kd-gate-pot">{fmt(pot)} $THRONE</div>
+        <button className="kd-x" onClick={close} aria-label="later">×</button>
+        <div className="kd-gate-kicker">
+          <span className="kd-live" /> King Drop · {board?.preseason === false ? `week ${board?.week}` : "pre-season · from now to oct 18"}
+        </div>
+        <div className="kd-gate-pot"><CountUp to={pot} /> <span className="kd-gate-pot-t">$THRONE</span></div>
         <div className="kd-gate-sub">on the line for points. every trade on the desk scores for your side.</div>
 
         {done ? (
-          <>
-            <div className={`kd-gate-done kd-${done}`}>you are {done}. {short(addr)}</div>
+          <div className="kd-done">
+            <img className={`kd-done-piece kd-piece-${done}`} src={pieceSrc(done, 1)} alt="" />
+            <div className={`kd-gate-done kd-${done}`}>you are {done}.</div>
+            <div className="kd-gate-sub">{short(addr)} · every trade from here scores for {done}.</div>
             <div className="kd-gate-row">
               <a className="kd-btn kd-btn-ghost" href={BOARD_URL} target="_blank" rel="noreferrer">
                 open the board
@@ -229,27 +239,32 @@ export function KingDropGate() {
                 back to trading
               </button>
             </div>
-          </>
+          </div>
         ) : (
           <>
             <div className="kd-gate-title">pick your side</div>
-            <div className="kd-gate-row">
+            <div className="kd-arena">
               {(["white", "black"] as Side[]).map((s) => (
-                <button
+                <SideCard
                   key={s}
-                  className={`kd-side kd-${s}`}
+                  side={s}
+                  full={side.capFull === s}
+                  busy={busy === s}
                   disabled={!!busy || side.capFull === s}
-                  onClick={() => pick(s)}
-                >
-                  <span className="kd-side-glyph">{s === "white" ? "♔" : "♚"}</span>
-                  <span className="kd-side-name">{s}</span>
-                  <span className="kd-side-meta">
-                    {side.capFull === s ? "full" : counts ? `${counts[s]} wallets` : ""}
-                  </span>
-                  {busy === s && <span className="kd-side-busy">sign in your wallet…</span>}
-                </button>
+                  meta={side.capFull === s ? "full this week" : counts ? plural(wallets(s), "wallet") : ""}
+                  pts={pts ? pts[s] : null}
+                  onPick={() => pick(s)}
+                />
               ))}
+              <div className="kd-vs">vs</div>
             </div>
+            {pts && (
+              <div className="kd-tug" title="share of season points">
+                <div className="kd-tug-w" style={{ width: `${Math.round(whiteShare * 100)}%` }} />
+                <span className="kd-tug-l">{Math.round(whiteShare * 100)}%</span>
+                <span className="kd-tug-r">{100 - Math.round(whiteShare * 100)}%</span>
+              </div>
+            )}
             <div className="kd-gate-foot">
               <button className="kd-link" disabled={!!busy} onClick={() => pick(smaller)}>
                 pick for me (the smaller side)
@@ -267,5 +282,65 @@ export function KingDropGate() {
         )}
       </div>
     </div>
+  );
+}
+
+// ---------- bits ----------
+
+const pieceSrc = (side: Side, rank: number) =>
+  `https://throne.network/arena/pieces/${side}-${String(rank).padStart(2, "0")}-${rank === 1 ? "king" : "queen"}.svg`;
+
+function CountUp({ to }: { to: number }) {
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    let raf = 0;
+    const t0 = performance.now();
+    const dur = 900;
+    const tick = (t: number) => {
+      const k = Math.min(1, (t - t0) / dur);
+      const e = 1 - Math.pow(1 - k, 3);
+      setV(Math.round(to * e));
+      if (k < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [to]);
+  return <>{fmt(v)}</>;
+}
+
+function SideCard(props: {
+  side: Side;
+  full: boolean;
+  busy: boolean;
+  disabled: boolean;
+  meta: string;
+  pts: number | null;
+  onPick: () => void;
+}) {
+  const { side, full, busy, disabled, meta, pts, onPick } = props;
+  const [tilt, setTilt] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const onMove = (e: MouseEvent<HTMLButtonElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - 0.5;
+    const y = (e.clientY - r.top) / r.height - 0.5;
+    setTilt({ x: y * -10, y: x * 12 });
+  };
+  const onLeave = () => setTilt({ x: 0, y: 0 });
+  return (
+    <button
+      className={`kd-side kd-${side}${busy ? " is-busy" : ""}${full ? " is-full" : ""}`}
+      disabled={disabled}
+      onClick={onPick}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+      style={{ transform: `perspective(700px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` }}
+    >
+      <span className="kd-side-halo" />
+      <img className="kd-side-piece" src={pieceSrc(side, 1)} alt={`${side} king`} draggable={false} />
+      <span className="kd-side-name">{side}</span>
+      <span className="kd-side-meta">{meta}</span>
+      {pts != null && <span className="kd-side-pts">{fmt(pts)} pts</span>}
+      <span className="kd-side-cta">{busy ? "sign in your wallet…" : full ? "full" : `join ${side}`}</span>
+    </button>
   );
 }
