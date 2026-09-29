@@ -16,7 +16,7 @@ import { AccountStatusEnum } from "@orderly.network/types";
 import "./kingdrop.css";
 
 const API = "https://throne.network/api/arena";
-export const BOARD_URL = "https://throne.network/kd-7f3a2c91";
+export const BOARD_URL = "https://throne.network/board";
 const POT_FALLBACK = 923000;
 
 type Side = "white" | "black";
