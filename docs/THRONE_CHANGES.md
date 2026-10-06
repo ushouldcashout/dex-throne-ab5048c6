@@ -17,6 +17,18 @@ Conventions
 
 ## Log
 
+### 2026-10-06 · no market-hours chip; PONS listed
+
+- `app/styles/index.css`: hide the "US hours · live" / "market closed" chip (and its
+  "Regular trading hours will close in" tooltip) in the symbol bar. Every market on the desk
+  is ACTIVE around the clock; hours and off-hours pricing are documented once at
+  docs.throne.network/markets.html instead of on every market.
+- `app/utils/symbol-filter.ts` + `public/config.js`: new runtime key `VITE_COMMUNITY_SYMBOLS`,
+  an allow-list of permissionless listings to show despite the broker suffix. Set to
+  `PERP_PONS_USDC_mythos` so PONS appears. Duplicates of native names stay hidden.
+  Note: community books are operated by the listing broker (mythos); our builder tag still
+  applies to trades routed from the desk.
+
 ### 2026-09-20 · Docs
 
 - Public docs live in a separate repo, `ushouldcashout/throne-docs` (GitHub Pages, markdown →
