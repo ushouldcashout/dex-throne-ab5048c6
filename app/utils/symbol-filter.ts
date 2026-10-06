@@ -18,16 +18,23 @@ const isCommunityListing = (symbol: string): boolean =>
  *
  * Format: Comma-separated list of full symbol names (e.g., "PERP_BTC_USDC,PERP_ETH_USDC")
  * - Only symbols in the list will be included
- * - If empty, all Orderly-native symbols are returned (community listings are always dropped)
+ * - If empty, all Orderly-native symbols are returned (community listings are dropped)
+ *
+ * VITE_COMMUNITY_SYMBOLS (THRONE, 2026-10-06): comma-separated full symbols of permissionless
+ * listings to show anyway, e.g. "PERP_PONS_USDC_mythos". Use it for markets that have no
+ * Orderly-native equivalent (PONS, XAUT, COPPER, ...); never for a duplicate of a native name.
  */
 export function createSymbolDataAdapter(): NonNullable<
   ConfigProviderProps["dataAdapter"]
 > {
   const symbolList = getRuntimeConfigArray("VITE_SYMBOL_LIST");
+  const communityAllow = new Set(getRuntimeConfigArray("VITE_COMMUNITY_SYMBOLS"));
 
   return {
     symbolList: (original: API.MarketInfoExt[]) => {
-      const native = original.filter((item) => !isCommunityListing(item.symbol));
+      const native = original.filter(
+        (item) => !isCommunityListing(item.symbol) || communityAllow.has(item.symbol),
+      );
 
       if (symbolList.length === 0) {
         return native;
