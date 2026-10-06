@@ -173,3 +173,12 @@ button.oui-button {
 .oui-tabs-content > .oui-overflow-hidden.oui-mt-2 > .oui-box.oui-py-3.oui-rounded-xl:first-child {
   display: none !important;
 }
+
+/* THRONE 2026-10-06: no "US hours · live" / "market closed" chip in the symbol bar. The desk
+   trades around the clock (every market reports ACTIVE); session hours and how off-hours
+   pricing works are explained once in the docs (markets and hours), not on every market.
+   The chip is a tooltip trigger button that is the only child of its row inside the
+   symbol-name column; hiding the row removes the tooltip with it. */
+.oui-trading-symbolInfoBar-container .oui-flex-col.oui-shrink-0 > .oui-gap-1:has(> button[data-state]:only-child) {
+  display: none !important;
+}
