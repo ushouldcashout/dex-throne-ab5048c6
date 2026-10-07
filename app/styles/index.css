@@ -182,3 +182,11 @@ button.oui-button {
 .oui-trading-symbolInfoBar-container .oui-flex-col.oui-shrink-0 > .oui-gap-1:has(> button[data-state]:only-child) {
   display: none !important;
 }
+
+/* THRONE 2026-10-06: community listings (PONS). The venue injects a risk notice above the symbol
+   bar for permissionless markets; inside our fixed 44px symbol-bar row it pushed the real bar
+   (symbol dropdown, price, funding) out of view. The 'mythos' tag next to the symbol and the
+   Markets page badge stay; the paragraph goes. */
+.oui-trading-symbolInfoBar-container .oui-symbol-info-bar-risk-notice {
+  display: none !important;
+}
