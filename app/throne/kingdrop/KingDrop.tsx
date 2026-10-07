@@ -11,7 +11,7 @@
  * gate stays closed.
  */
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
-import { useAccount } from "@orderly.network/hooks";
+import { useAccount, useWalletConnector } from "@orderly.network/hooks";
 import { AccountStatusEnum } from "@orderly.network/types";
 import "./kingdrop.css";
 
@@ -96,8 +96,17 @@ export function useKingDrop() {
 const pickMessage = (wallet: string, side: Side, season: string) =>
   `throne. king drop\njoin ${side}\nwallet ${wallet.toLowerCase()}\nseason ${season}\n\nThis signature is free and sends no transaction.`;
 
-async function signPick(wallet: string, side: Side, season: string): Promise<{ ok: boolean; error?: string }> {
-  const eth = (window as any).ethereum;
+// THRONE 2026-10-07: sign with the provider of the wallet Orderly actually connected (WalletConnect,
+// Rabby, Coinbase, a second injected extension), not whatever happens to be window.ethereum. With
+// several providers installed, or a mobile wallet over WalletConnect, window.ethereum is a different
+// wallet and personal_sign fails for the connected address ("could not sign").
+async function signPick(
+  provider: any,
+  wallet: string,
+  side: Side,
+  season: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const eth = provider && provider.request ? provider : (window as any).ethereum;
   if (!eth || !eth.request) return { ok: false, error: "no wallet provider found" };
   const msg = pickMessage(wallet, side, season);
   const hex = "0x" + Array.from(new TextEncoder().encode(msg)).map((b) => b.toString(16).padStart(2, "0")).join("");
@@ -105,7 +114,9 @@ async function signPick(wallet: string, side: Side, season: string): Promise<{ o
   try {
     sig = await eth.request({ method: "personal_sign", params: [hex, wallet] });
   } catch (e: any) {
-    return { ok: false, error: e?.code === 4001 ? "signature declined" : "could not sign" };
+    if (e?.code === 4001 || /rejected|denied/i.test(String(e?.message || ""))) return { ok: false, error: "signature declined" };
+    const detail = String(e?.message || e?.code || "").slice(0, 70);
+    return { ok: false, error: detail ? `could not sign (${detail})` : "could not sign" };
   }
   try {
     const r = await fetch(`${API}/pick`, {
@@ -182,6 +193,7 @@ const gateKey = (a: string) => `kd_gate_${a}`;
 
 export function KingDropGate() {
   const { addr, board, side, season, reloadSide } = useKingDrop();
+  const { wallet } = useWalletConnector() as any; // THRONE: connected wallet's EIP-1193 provider
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState<Side | null>(null);
   const [done, setDone] = useState<Side | null>(null);
@@ -213,7 +225,7 @@ export function KingDropGate() {
     if (!addr || !season || busy) return;
     setErr(null);
     setBusy(s);
-    const r = await signPick(addr, s, season);
+    const r = await signPick(wallet?.provider, addr, s, season);
     setBusy(null);
     if (r.ok) {
       setDone(s);
