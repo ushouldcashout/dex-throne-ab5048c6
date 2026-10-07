@@ -8,6 +8,19 @@ import { initializeAnalyticsFromRuntimeConfig } from "./utils/analytics";
 import { withBasePath } from "./utils/base-path";
 import "./styles/index.css";
 
+// THRONE 2026-10-07: after a deploy, a tab still running the previous build asks for hashed chunks
+// that no longer exist ("Failed to fetch dynamically imported module"). Reload once to pick up the
+// new build. The timestamp guard stops a loop if a reload does not fix it.
+window.addEventListener("vite:preloadError", (event) => {
+  const key = "throne_chunk_reload";
+  const last = Number(sessionStorage.getItem(key) || 0);
+  if (Date.now() - last < 60_000) return;
+  sessionStorage.setItem(key, String(Date.now()));
+  event.preventDefault();
+  location.reload();
+});
+
+
 const IndexPage = lazy(() => import("./pages/Index"));
 const PerpLayout = lazy(() => import("./pages/perp/Layout"));
 const PerpIndex = lazy(() => import("./pages/perp/Index"));
