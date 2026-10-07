@@ -124,11 +124,19 @@ async function signPick(
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ wallet, side, sig }),
     });
-    const j = await r.json();
-    if (!r.ok || j.error) return { ok: false, error: j.error || "pick failed" };
+    const text = await r.text();
+    let j: any = null;
+    try {
+      j = JSON.parse(text);
+    } catch {
+      // THRONE 2026-10-07: a non-JSON reply (Cloudflare challenge / rate-limit page, 5xx HTML) used
+      // to surface as a bare "network error"; show the status and the first bytes so it is diagnosable.
+      return { ok: false, error: `api ${r.status}: ${text.replace(/\s+/g, " ").slice(0, 60)}` };
+    }
+    if (!r.ok || j.error) return { ok: false, error: j.error || `pick failed (${r.status})` };
     return { ok: true };
-  } catch {
-    return { ok: false, error: "network error" };
+  } catch (e: any) {
+    return { ok: false, error: `network error (${String(e?.message || e).slice(0, 60)})` };
   }
 }
 
