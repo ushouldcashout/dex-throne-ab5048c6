@@ -117,9 +117,12 @@ export const getEvmInitialConfig = () => {
     ? {
         options: {
           wallets,
+          // THRONE: web3-onboard's appMetadata.name is a required string; the runtime
+          // config getter returns string | undefined. Pre-existing type error, surfaced by
+          // the CI typecheck step added with the Up/Down page.
           appMetadata: {
-            name: getRuntimeConfig("VITE_ORDERLY_BROKER_NAME"),
-            description: getRuntimeConfig("VITE_ORDERLY_BROKER_NAME"),
+            name: getRuntimeConfig("VITE_ORDERLY_BROKER_NAME") ?? "THRONE",
+            description: getRuntimeConfig("VITE_ORDERLY_BROKER_NAME") ?? "THRONE",
           },
         },
       }
