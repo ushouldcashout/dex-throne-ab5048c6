@@ -34,7 +34,12 @@ export function useNav() {
 
       const path = routeMap[option.href] || option.href;
 
-      navigate(`${path}${queryString}`);
+      // THRONE 2026-10-27: SDK round links may carry their own query/hash and ask for a
+      // history replace (Up/Down picks the current round and rewrites /prediction in place).
+      const hasOwnQuery = path.includes("?") || path.includes("#");
+      navigate(hasOwnQuery ? path : `${path}${queryString}`, {
+        replace: option.replace,
+      });
     },
     [navigate, searchParams]
   );

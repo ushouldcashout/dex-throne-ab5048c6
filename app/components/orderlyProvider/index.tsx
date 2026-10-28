@@ -18,6 +18,7 @@ import { createSymbolDataAdapter } from "@/utils/symbol-filter";
 import { resolveDexThemeConfig } from "@/utils/theme-config";
 import ServiceDisclaimerDialog from "./ServiceDisclaimerDialog";
 import { OrderlyLocaleProvider } from "./orderlyLocaleProvider";
+import { useNav } from "@/hooks/useNav";
 // THRONE: desktop layout plugin (see app/throne/plugins/throneLayout.tsx)
 import { throneLayoutPlugin } from "@/throne/plugins/throneLayout";
 
@@ -56,6 +57,9 @@ const WalletConnector = lazy(
 
 const OrderlyProvider = (props: { children: ReactNode }) => {
   const config = useOrderlyConfig();
+  // THRONE 2026-10-27: the provider needs the router adapter so the markets dropdown can
+  // offer Up/Down rounds and route to /prediction/:symbol (SDK 3.3.0).
+  const { onRouteChange } = useNav();
   const deploymentEnv = normalizeDeploymentEnv(
     getRuntimeConfig("VITE_DEPLOYMENT_ENV"),
   );
@@ -176,6 +180,7 @@ const OrderlyProvider = (props: { children: ReactNode }) => {
       dataAdapter={dataAdapter}
       // THRONE: our own desktop grid via Trading.Layout.Desktop interceptor
       plugins={[throneLayoutPlugin]}
+      onRouteChange={onRouteChange}
       restrictedInfo={{
         customRestrictedRegions: getRuntimeConfigArray(
           "VITE_RESTRICTED_REGIONS",

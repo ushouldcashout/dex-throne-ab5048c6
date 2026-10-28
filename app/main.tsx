@@ -50,6 +50,9 @@ const PointsIndex = lazy(() => import("./pages/points/Index"));
 // THRONE: referrals page
 const ReferralsLayout = lazy(() => import("./pages/referrals/Layout"));
 const ReferralsIndex = lazy(() => import("./pages/referrals/Index"));
+// THRONE: Up/Down rounds page
+const PredictionLayout = lazy(() => import("./pages/prediction/Layout"));
+const PredictionIndex = lazy(() => import("./pages/prediction/Index"));
 
 async function loadRuntimeConfig() {
   return new Promise<void>((resolve) => {
@@ -138,6 +141,15 @@ const router = createBrowserRouter(
           path: "referrals",
           element: <ReferralsLayout />,
           children: [{ index: true, element: <ReferralsIndex /> }],
+        },
+        {
+          // THRONE: Up/Down rounds. The SDK's own links are /prediction and /prediction/:symbol.
+          path: "prediction",
+          element: <PredictionLayout />,
+          children: [
+            { index: true, element: <PredictionIndex /> },
+            { path: ":symbol", element: <PredictionIndex /> },
+          ],
         },
         // THRONE: old path from the first version of the page
         { path: "banner", element: <Navigate to="/referrals" replace /> },

@@ -276,6 +276,9 @@ export const useOrderlyConfig = () => {
   return useMemo<OrderlyConfig>(() => {
     const allMenuItems: MenuConfigItem[] = [
       { id: "Trading", href: "/", name: t("common.trading"), isDefault: true },
+      // THRONE 2026-10-27: Up/Down rounds page (SDK 3.3.0 prediction). Enable via
+      // VITE_ENABLED_MENUS=…,UpDown in public/config.js.
+      { id: "UpDown", href: "/prediction", name: "Up/Down", isDefault: true },
       {
         id: "Portfolio",
         href: "/portfolio",
