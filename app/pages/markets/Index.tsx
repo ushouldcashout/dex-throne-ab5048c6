@@ -25,6 +25,10 @@ export default function MarketsIndex() {
         onSymbolChange={(symbol) => {
           navigate(`/perp/${symbol.symbol}`);
         }}
+        // THRONE: the 3.3.0 "Predictions" tab lists Up/Down rounds; open them on our page.
+        onPredictionSelect={(symbol) => {
+          navigate(`/prediction/${symbol}`);
+        }}
       />
     </>
   );
