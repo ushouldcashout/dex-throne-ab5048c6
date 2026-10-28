@@ -8,7 +8,7 @@ Conventions
 
 - THRONE code lives under `app/throne/` (new files, never touched by upstream).
 - Template files we edit are kept to a minimum and each edit is marked with a `// THRONE:` comment.
-- All `@orderly.network/*` packages are pinned to the exact same version (3.2.1). Upgrade them
+- All `@orderly.network/*` packages are pinned to the exact same version (3.3.0). Upgrade them
   together, on purpose, then do a visual pass on desktop and mobile. Never let one drift.
 - The upstream auto-merge step in `.github/workflows/deploy.yml` is removed. Upstream changes are
   pulled by hand: `git fetch upstream && git merge upstream/main`, resolve, test, push.
@@ -16,6 +16,24 @@ Conventions
   trade.throne.network. A Cloudflare Worker in front adds a passphrase gate (not in this repo).
 
 ## Log
+
+### 2026-10-27 · Up/Down rounds page; SDK 3.2.1 → 3.3.0
+- Every `@orderly.network/*` package bumped together to 3.3.0 (`trading-points` stays 2.0.2, it has no
+  3.x). New dependency `@orderly.network/prediction@3.3.0`, which ships the whole 5-minute BTC
+  UP/DOWN product (order entry, rounds strip, orders, positions, settlement polling, region gate).
+- New route `/prediction` and `/prediction/:symbol` (`app/pages/prediction/Layout.tsx`, `Index.tsx`).
+  The index redirects to the current round; a symbol renders `PredictionPage`. If the `prediction`
+  feature flag is off the page falls back to the perp route. Footer line: rounds settle off-chain
+  on the venue's index price, Throne does not control outcomes, link to the venue's supplemental
+  terms. Public name everywhere is "Up/Down"; the venue is never named.
+- `useNav.ts` forwards `option.replace`; `OrderlyAppProvider` now receives `onRouteChange` so the
+  markets dropdown gets the Perps / Up-Down switcher.
+- Nav: "Up/Down" item after Trading (`app/utils/config.tsx`, enabled in `public/config.js`).
+- Region gate kept at the SDK default (merges the venue's BINARY restricted list, US excluded).
+- Fee: taker 300 bps on the probability formula (builder default), maker 0.
+- King Drop: Up/Down volume is NOT counted for now. Check `perp_volume` on the first daily
+  snapshot after a test order before deciding.
+- CI: `yarn install --frozen-lockfile --prefer-offline`, new Typecheck step before build.
 
 ### 2026-10-06 · no market-hours chip; PONS listed
 
