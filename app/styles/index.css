@@ -192,3 +192,11 @@ button.oui-button {
 .oui-trading-symbolInfoBar-container .oui-symbol-info-bar-risk-notice {
   display: none !important;
 }
+
+/* THRONE 2026-10-29: SDK 3.3.0 applies font-feature-settings "ss02","ss03","ss05","ss06" to its text. On the
+   venue's default font those sets are benign; on Inter, ss05 is "circled characters" and ss06 "squared
+   characters", so every capital letter and digit rendered as a circled glyph (reported by traders on 27 Oct).
+   Keep Inter's disambiguation set only. `font-variant-numeric` (tabular numbers) is a separate property. */
+html, body, body * {
+  font-feature-settings: "ss02" !important;
+}
